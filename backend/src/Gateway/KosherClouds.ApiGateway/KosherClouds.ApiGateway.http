@@ -1,0 +1,6 @@
+@KosherClouds.ApiGateway_HostAddress = http://localhost:5009
+
+GET {{KosherClouds.ApiGateway_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

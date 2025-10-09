@@ -1,0 +1,101 @@
+########################################
+# Visual Studio / Rider
+########################################
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.idea/
+
+# Rider specific
+*.iml
+
+# VS Code
+.vscode/
+
+########################################
+# Build / output
+########################################
+bin/
+obj/
+out/
+TestResults/
+*.dll
+*.exe
+*.pdb
+*.app
+*.vsix
+
+########################################
+# NuGet
+########################################
+*.nupkg
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+########################################
+# EF Core Migrations / DB
+########################################
+*.db
+*.sqlite
+*.mdf
+*.ldf
+*.bak
+migrations/
+__EFMigrationsHistory
+
+########################################
+# Logs
+########################################
+*.log
+*.trace
+*.tlog
+*.tmp
+*.cache
+
+########################################
+# Docker
+########################################
+docker-compose.override.yml
+*.env
+*.local.env
+docker-compose.override.*.yml
+*.tar
+tmp/
+
+########################################
+# Secrets / Keys / Certificates
+########################################
+*.pfx
+*.key
+*.pem
+*.cert
+*.der
+
+########################################
+# Test / Coverage
+########################################
+*.trx
+*.coverage
+*.coveragexml
+*.dotCover
+*.ncrunch*
+*.vsmdi
+*.testsettings
+
+########################################
+# EF Core / Migrations
+########################################
+**/Migrations/*.Designer.cs
+**/Migrations/*.resx
+
+########################################
+# Misc
+########################################
+*.db-journal
+*.swp
+*.sublime-workspace
+*.sublime-project

@@ -1,0 +1,6 @@
+@KosherClouds.ReviewService_HostAddress = http://localhost:5198
+
+GET {{KosherClouds.ReviewService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
