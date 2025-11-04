@@ -37,14 +37,13 @@ project.fragment.lock.json
 artifacts/
 
 ########################################
-# EF Core Migrations / DB
+# EF Core DB
 ########################################
 *.db
 *.sqlite
 *.mdf
 *.ldf
 *.bak
-migrations/
 __EFMigrationsHistory
 
 ########################################
