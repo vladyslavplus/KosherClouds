@@ -1,0 +1,60 @@
+# =========================
+# .NET build artifacts
+# =========================
+**/bin/
+**/obj/
+**/out/
+**/Debug/
+**/Release/
+
+# =========================
+# Tests
+# =========================
+tests/
+*.Test/
+*.Tests/
+
+# =========================
+# IDE / build system files
+# =========================
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.userprefs
+*.swp
+*.bak
+
+# =========================
+# Logs & temp files
+# =========================
+*.log
+*.tmp
+*.temp
+*.DS_Store
+Thumbs.db
+
+# =========================
+# Git & Docker
+# =========================
+.git/
+.gitignore
+.dockerignore
+
+# =========================
+# Frontend / Node
+# =========================
+node_modules/
+npm-debug.log
+yarn-error.log
+*.tsbuildinfo
+dist/
+
+# =========================
+# 🪣 System files
+# =========================
+desktop.ini
+.env
+.env.*
+*.db
