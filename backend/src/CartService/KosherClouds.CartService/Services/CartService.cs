@@ -1,93 +1,131 @@
-namespace KosherClouds.CartService.Services;
-
-using AutoMapper;
-using Microsoft.Extensions.Logging;
-using KosherClouds.CartService.DTOs;
 using KosherClouds.CartService.DTOs;
 using KosherClouds.CartService.Entities;
-using KosherClouds.CartService.Repositories.Interfaces;
 using KosherClouds.CartService.Services.Interfaces;
+using KosherClouds.Contracts.Cart;
+using KosherClouds.ServiceDefaults.Redis;
+using MassTransit;
 
+namespace KosherClouds.CartService.Services
+{
     public class CartService : ICartService
     {
-        private readonly ICartRepository _repository;
-        private readonly IMapper _mapper;
+        private readonly IRedisCacheService _cache;
+        private readonly IPublishEndpoint _publishEndpoint;
         private readonly ILogger<CartService> _logger;
+        private const string CartPrefix = "cart:";
+        private static readonly TimeSpan CartTtl = TimeSpan.FromMinutes(30);
 
-        public CartService(ICartRepository repository, IMapper mapper, ILogger<CartService> logger)
+        public CartService(
+            IRedisCacheService cache,
+            IPublishEndpoint publishEndpoint,
+            ILogger<CartService> logger)
         {
-            _repository = repository;
-            _mapper = mapper;
+            _cache = cache;
+            _publishEndpoint = publishEndpoint;
             _logger = logger;
         }
 
+        private static string GetCartKey(Guid userId) => $"{CartPrefix}{userId}";
+
         public async Task<ShoppingCartDto> GetCartDetailsAsync(Guid userId)
         {
-            var cart = await _repository.GetCartByUserIdAsync(userId);
-            return _mapper.Map<ShoppingCartDto>(cart);
+            var key = GetCartKey(userId);
+            var cart = await _cache.GetDataAsync<ShoppingCart>(key) ?? new ShoppingCart(userId);
+
+            return new ShoppingCartDto
+            {
+                UserId = cart.UserId,
+                Items = cart.Items.Select(i => new ShoppingCartItemDto
+                {
+                    ProductId = i.ProductId,
+                    Quantity = i.Quantity
+                }).ToList()
+            };
         }
 
         public async Task<ShoppingCartDto> AddOrUpdateItemAsync(Guid userId, CartItemAddDto dto)
         {
-            var cart = await _repository.GetCartByUserIdAsync(userId);
-            
-            var existingItem = cart.Items.FirstOrDefault(i => i.ProductId == dto.ProductId);
+            var key = GetCartKey(userId);
+            var cart = await _cache.GetDataAsync<ShoppingCart>(key) ?? new ShoppingCart(userId);
 
-            // Імітація отримання реплікованих даних
-            var tempProductData = new { Name = $"Продукт #{dto.ProductId.ToString().Substring(0, 4)}", Price = 100.00m, IsAvailable = true };
-            
-            if (!tempProductData.IsAvailable)
-            {
-                _logger.LogWarning("Attempted to add unavailable product {ProductId}", dto.ProductId);
-                throw new Exception("Product is currently unavailable."); 
-            }
+            var item = cart.Items.FirstOrDefault(i => i.ProductId == dto.ProductId);
 
-            if (existingItem != null)
+            if (item != null)
             {
-                existingItem.Quantity += dto.Quantity;
-                _logger.LogInformation("Updated quantity for product {ProductId} in cart for user {UserId}", dto.ProductId, userId);
-            }
-            else
-            {
-                var newItem = new ShoppingCartItem
+                item.Quantity += dto.Quantity;
+
+                if (item.Quantity <= 0)
                 {
-                    Id = Guid.NewGuid(),
+                    cart.Items.Remove(item);
+                    _logger.LogInformation("Removed product {ProductId} due to non-positive quantity for user {UserId}.", dto.ProductId, userId);
+                }
+                else
+                {
+                    _logger.LogInformation("Adjusted product {ProductId} by {Delta} for user {UserId}. New quantity: {Quantity}.",
+                        dto.ProductId, dto.Quantity, userId, item.Quantity);
+                }
+            }
+            else if (dto.Quantity > 0)
+            {
+                cart.Items.Add(new ShoppingCartItem
+                {
                     ProductId = dto.ProductId,
-                    Quantity = dto.Quantity,
-                    ProductName = tempProductData.Name,
-                    UnitPrice = tempProductData.Price,
-                    IsAvailable = tempProductData.IsAvailable
-                };
-                cart.Items.Add(newItem);
-                _logger.LogInformation("Added new product {ProductId} to cart for user {UserId}", dto.ProductId, userId);
+                    Quantity = dto.Quantity
+                });
+                _logger.LogInformation("Added new product {ProductId} (x{Quantity}) to cart for user {UserId}.", dto.ProductId, dto.Quantity, userId);
             }
 
-            await _repository.SaveChangesAsync();
-            return _mapper.Map<ShoppingCartDto>(cart);
+            await _cache.SetDataAsync(key, cart, CartTtl);
+            return await GetCartDetailsAsync(userId);
         }
 
         public async Task RemoveItemAsync(Guid userId, Guid productId)
         {
-            var cart = await _repository.GetCartByUserIdAsync(userId);
-            var itemToRemove = cart.Items.FirstOrDefault(i => i.ProductId == productId);
+            var key = GetCartKey(userId);
+            var cart = await _cache.GetDataAsync<ShoppingCart>(key);
 
-            if (itemToRemove != null)
+            if (cart == null) return;
+
+            var removed = cart.Items.RemoveAll(i => i.ProductId == productId);
+            if (removed > 0)
             {
-                cart.Items.Remove(itemToRemove);
-                await _repository.SaveChangesAsync();
-                _logger.LogInformation("Removed product {ProductId} from cart for user {UserId}", productId, userId);
+                await _cache.SetDataAsync(key, cart, CartTtl);
+                _logger.LogInformation("Removed product {ProductId} from cart for user {UserId}.", productId, userId);
             }
         }
 
         public async Task ClearCartAsync(Guid userId)
         {
-            var cart = await _repository.GetCartByUserIdAsync(userId);
-            if (cart.Items.Any())
-            {
-                cart.Items.Clear();
-                await _repository.SaveChangesAsync();
-                _logger.LogInformation("Cleared cart for user {UserId}", userId);
-            }
+            var key = GetCartKey(userId);
+            await _cache.RemoveDataAsync(key);
+            _logger.LogInformation("Cleared cart for user {UserId}.", userId);
         }
-        
+
+        public async Task CheckoutAsync(Guid userId)
+        {
+            var key = GetCartKey(userId);
+            var cart = await _cache.GetDataAsync<ShoppingCart>(key);
+
+            if (cart == null || !cart.Items.Any())
+            {
+                _logger.LogWarning("Checkout attempted for empty cart (User: {UserId})", userId);
+                return;
+            }
+
+            var @event = new CartCheckedOutEvent
+            {
+                UserId = userId,
+                Items = cart.Items.Select(i => new CartCheckedOutEvent.CartItem
+                {
+                    ProductId = i.ProductId,
+                    Quantity = i.Quantity
+                }).ToList()
+            };
+
+            await _publishEndpoint.Publish(@event);
+            _logger.LogInformation("Cart checkout event published for user {UserId} with {Count} items.", userId, cart.Items.Count);
+
+            await ClearCartAsync(userId);
+        }
     }
+}

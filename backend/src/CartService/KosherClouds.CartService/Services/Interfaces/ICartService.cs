@@ -6,4 +6,5 @@ public interface ICartService
     Task<ShoppingCartDto> AddOrUpdateItemAsync(Guid userId, CartItemAddDto dto);
     Task RemoveItemAsync(Guid userId, Guid productId);
     Task ClearCartAsync(Guid userId);
+    Task CheckoutAsync(Guid userId);
 }

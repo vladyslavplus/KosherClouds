@@ -1,88 +1,93 @@
-namespace KosherClouds.CartService.Controllers;
-
+using KosherClouds.CartService.DTOs;
+using KosherClouds.CartService.Services.Interfaces;
+using KosherClouds.ServiceDefaults.Extensions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using  KosherClouds.CartService.DTOs;
-using  KosherClouds.CartService.DTOs;
-using  KosherClouds.CartService.Services.Interfaces;
 
+namespace KosherClouds.CartService.Controllers
+{
     [ApiController]
-    [Route("api/v1/users/{userId:guid}/cart")]
+    [Route("api/[controller]")]
+    [Authorize]
     public class CartController : ControllerBase
     {
         private readonly ICartService _cartService;
+        private readonly ILogger<CartController> _logger;
 
-        public CartController(ICartService cartService)
+        public CartController(ICartService cartService, ILogger<CartController> logger)
         {
             _cartService = cartService;
+            _logger = logger;
         }
 
-        /// <summary>
-        /// Отримує вміст кошика для вказаного користувача.
-        /// GET api/v1/users/{userId}/cart
-        /// </summary>
         [HttpGet]
-        [ProducesResponseType(typeof(ShoppingCartDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ShoppingCartDto>> GetCart(Guid userId)
+        public async Task<IActionResult> GetCart(CancellationToken token)
         {
-            // У реальному житті, тут ви перевіряли б, чи userId відповідає автентифікованому користувачу
-            var cart = await _cartService.GetCartDetailsAsync(userId);
-            
-            // Якщо CartService не створює кошик автоматично, тут може бути логіка 404
+            var userId = User.GetUserId();
+            if (userId is null)
+            {
+                _logger.LogWarning("User ID not found in JWT token.");
+                return Unauthorized("User ID not found.");
+            }
+
+            var cart = await _cartService.GetCartDetailsAsync(userId.Value);
             return Ok(cart);
         }
 
-        /// <summary>
-        /// Додає або оновлює товар у кошику.
-        /// POST api/v1/users/{userId}/cart/items
-        /// </summary>
         [HttpPost("items")]
-        [ProducesResponseType(typeof(ShoppingCartDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<ShoppingCartDto>> AddItem(Guid userId, [FromBody] CartItemAddDto dto)
+        public async Task<IActionResult> AddOrUpdateItem([FromBody] CartItemAddDto dto, CancellationToken token)
         {
-            if (!ModelState.IsValid)
+            var userId = User.GetUserId();
+            if (userId is null)
             {
-                return BadRequest(ModelState);
+                _logger.LogWarning("User ID not found in JWT token.");
+                return Unauthorized("User ID not found.");
             }
 
-            try
-            {
-                var updatedCart = await _cartService.AddOrUpdateItemAsync(userId, dto);
-                return Ok(updatedCart);
-            }
-            catch (Exception ex)
-            {
-                // Залежно від типу помилки, можна повернути 404 (якщо продукт не існує) або 400
-                return BadRequest(new { error = ex.Message }); 
-            }
+            var updated = await _cartService.AddOrUpdateItemAsync(userId.Value, dto);
+            return Ok(updated);
         }
-        
-        /// <summary>
-        /// Видаляє вказаний товар із кошика.
-        /// DELETE api/v1/users/{userId}/cart/items/{productId}
-        /// </summary>
+
         [HttpDelete("items/{productId:guid}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> RemoveItem(Guid userId, Guid productId)
+        public async Task<IActionResult> RemoveItem(Guid productId, CancellationToken token)
         {
-            await _cartService.RemoveItemAsync(userId, productId);
-            
-            // 204 No Content - успішно оброблено, але відповіді немає
-            return NoContent(); 
-        }
+            var userId = User.GetUserId();
+            if (userId is null)
+            {
+                _logger.LogWarning("User ID not found in JWT token.");
+                return Unauthorized("User ID not found.");
+            }
 
-        /// <summary>
-        /// Очищає весь вміст кошика.
-        /// DELETE api/v1/users/{userId}/cart
-        /// </summary>
-        [HttpDelete]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> ClearCart(Guid userId)
-        {
-            await _cartService.ClearCartAsync(userId);
+            await _cartService.RemoveItemAsync(userId.Value, productId);
             return NoContent();
         }
-        
+
+        [HttpDelete]
+        public async Task<IActionResult> ClearCart(CancellationToken token)
+        {
+            var userId = User.GetUserId();
+            if (userId is null)
+            {
+                _logger.LogWarning("User ID not found in JWT token.");
+                return Unauthorized("User ID not found.");
+            }
+
+            await _cartService.ClearCartAsync(userId.Value);
+            return NoContent();
+        }
+
+        [HttpPost("checkout")]
+        public async Task<IActionResult> Checkout(CancellationToken token)
+        {
+            var userId = User.GetUserId();
+            if (userId is null)
+            {
+                _logger.LogWarning("User ID not found in JWT token.");
+                return Unauthorized("User ID not found.");
+            }
+
+            await _cartService.CheckoutAsync(userId.Value);
+            return Accepted(new { message = "Checkout initiated successfully." });
+        }
     }
+}

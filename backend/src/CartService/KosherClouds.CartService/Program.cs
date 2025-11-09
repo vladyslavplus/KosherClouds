@@ -1,29 +1,31 @@
-using System.Reflection;
-using Microsoft.EntityFrameworkCore;
-using KosherClouds.CartService.Data;
-using KosherClouds.CartService.Repositories;
-using KosherClouds.CartService.Repositories.Interfaces;
 using KosherClouds.CartService.Services;
 using KosherClouds.CartService.Services.Interfaces;
+using KosherClouds.ServiceDefaults.Extensions;
+using KosherClouds.ServiceDefaults.Redis;
+using MassTransit;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<CartDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddRedisCache(builder.Configuration);
 
-builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
-builder.Services.AddAutoMapper(typeof(CartService).Assembly);
-
-
-
-builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host(builder.Configuration["RabbitMq:Host"], "/", h =>
+        {
+            h.Username(builder.Configuration["RabbitMq:Username"]!);
+            h.Password(builder.Configuration["RabbitMq:Password"]!);
+        });
+    });
+});
 
 builder.Services.AddScoped<ICartService, CartService>();
-
+builder.Services.AddJwtAuthentication(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerWithJwt("KosherClouds CartService API");
 
 var app = builder.Build();
 
@@ -34,6 +36,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseGlobalExceptionHandler();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 await app.RunAsync();

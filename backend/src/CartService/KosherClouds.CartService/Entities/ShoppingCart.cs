@@ -2,12 +2,11 @@ namespace KosherClouds.CartService.Entities;
 
 public class ShoppingCart
 {
-    public Guid Id { get; set; }
     public Guid UserId { get; set; }
+    public List<ShoppingCartItem> Items { get; set; } = new();
 
-    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
-        
-    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
-
-    public ICollection<ShoppingCartItem> Items { get; set; } = new List<ShoppingCartItem>();
+    public ShoppingCart(Guid userId)
+    {
+        UserId = userId;
+    }
 }
