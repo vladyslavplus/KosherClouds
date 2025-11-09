@@ -4,12 +4,12 @@ using KosherClouds.Common.Seed;
 using Microsoft.EntityFrameworkCore;
 
 namespace KosherClouds.ProductService.Data.Seed;
+
 public static class ProductSeeder
 {
     public static async Task SeedAsync(IServiceProvider serviceProvider)
     {
         using var scope = serviceProvider.CreateScope();
-
         var dbContext = scope.ServiceProvider.GetRequiredService<ProductDbContext>();
         var loggerFactory = scope.ServiceProvider.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("ProductSeeder");
@@ -27,9 +27,9 @@ public static class ProductSeeder
             new()
             {
                 Id = SharedSeedData.ProductKugelId,
-                Name = "Potato Kugel",
+                Name = SharedSeedData.ProductKugelName,
                 Description = "Traditional Jewish baked potato pudding made with onions and eggs.",
-                Price = 115.00m,
+                Price = SharedSeedData.ProductKugelPrice,
                 Category = ProductCategory.Dish,
                 SubCategory = "Classic",
                 IsVegetarian = true,
@@ -38,15 +38,15 @@ public static class ProductSeeder
                 RatingCount = 95,
                 Ingredients = new List<string> { "Potato", "Eggs", "Onion", "Oil" },
                 Allergens = new List<string> { "Eggs" },
-                Photos = new List<string> { "https://example.com/images/potato_kugel.jpg" },
+                Photos = new List<string> { "https://example.com/images/kugel.jpg" },
                 CreatedAt = DateTime.UtcNow
             },
             new()
             {
                 Id = SharedSeedData.ProductFalafelSetId,
-                Name = "Falafel Combo Set",
+                Name = SharedSeedData.ProductFalafelSetName,
                 Description = "Crispy falafel served with hummus, pita bread, and tahini sauce.",
-                Price = 240.00m,
+                Price = SharedSeedData.ProductFalafelSetPrice,
                 Category = ProductCategory.Set,
                 SubCategory = "Vegetarian",
                 IsVegetarian = true,
@@ -55,15 +55,15 @@ public static class ProductSeeder
                 RatingCount = 150,
                 Ingredients = new List<string> { "Chickpeas", "Parsley", "Tahini" },
                 Allergens = new List<string> { "Sesame" },
-                Photos = new List<string> { "https://example.com/images/falafel_combo.jpg" },
+                Photos = new List<string> { "https://example.com/images/falafel_set.jpg" },
                 CreatedAt = DateTime.UtcNow
             },
             new()
             {
                 Id = SharedSeedData.ProductHookahTropicalId,
-                Name = "Tropical Mix Hookah",
+                Name = SharedSeedData.ProductHookahTropicalName,
                 Description = "A rich tropical blend with mango, passion fruit, and coconut flavor.",
-                Price = 380.00m,
+                Price = SharedSeedData.ProductHookahTropicalPrice,
                 Category = ProductCategory.Hookah,
                 SubCategory = "Fruit",
                 IsAvailable = true,
@@ -90,6 +90,6 @@ public static class ProductSeeder
         await dbContext.Products.AddRangeAsync(products);
         await dbContext.SaveChangesAsync();
 
-        logger.LogInformation("ProductSeeder: Initial product data seeded successfully.");
+        logger.LogInformation("ProductSeeder: Successfully seeded {Count} products.", products.Count);
     }
 }

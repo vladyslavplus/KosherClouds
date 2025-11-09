@@ -75,19 +75,5 @@ namespace KosherClouds.CartService.Controllers
             await _cartService.ClearCartAsync(userId.Value);
             return NoContent();
         }
-
-        [HttpPost("checkout")]
-        public async Task<IActionResult> Checkout(CancellationToken token)
-        {
-            var userId = User.GetUserId();
-            if (userId is null)
-            {
-                _logger.LogWarning("User ID not found in JWT token.");
-                return Unauthorized("User ID not found.");
-            }
-
-            await _cartService.CheckoutAsync(userId.Value);
-            return Accepted(new { message = "Checkout initiated successfully." });
-        }
     }
 }

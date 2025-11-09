@@ -2,23 +2,10 @@ using KosherClouds.CartService.Services;
 using KosherClouds.CartService.Services.Interfaces;
 using KosherClouds.ServiceDefaults.Extensions;
 using KosherClouds.ServiceDefaults.Redis;
-using MassTransit;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRedisCache(builder.Configuration);
-
-builder.Services.AddMassTransit(x =>
-{
-    x.UsingRabbitMq((context, cfg) =>
-    {
-        cfg.Host(builder.Configuration["RabbitMq:Host"], "/", h =>
-        {
-            h.Username(builder.Configuration["RabbitMq:Username"]!);
-            h.Password(builder.Configuration["RabbitMq:Password"]!);
-        });
-    });
-});
 
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddJwtAuthentication(builder.Configuration);

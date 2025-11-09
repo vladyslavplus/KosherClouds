@@ -1,6 +1,5 @@
-namespace KosherClouds.OrderService.DTOs.OrderItem;
-
-
+namespace KosherClouds.OrderService.DTOs.OrderItem
+{
     public class OrderItemResponseDto
     {
         public Guid Id { get; set; }
@@ -8,7 +7,8 @@ namespace KosherClouds.OrderService.DTOs.OrderItem;
         public string ProductNameSnapshot { get; set; } = string.Empty;
         public decimal UnitPriceSnapshot { get; set; }
         public int Quantity { get; set; }
-        public decimal LineTotal => Quantity * UnitPriceSnapshot; 
+        public decimal LineTotal => Quantity * UnitPriceSnapshot;
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset UpdatedAt { get; set; }
     }
+}

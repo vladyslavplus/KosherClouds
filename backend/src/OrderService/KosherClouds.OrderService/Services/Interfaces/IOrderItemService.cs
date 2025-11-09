@@ -14,6 +14,4 @@ public interface IOrderItemService
         Guid itemId,
         int newQuantity,
         CancellationToken cancellationToken = default);
-    
-
 }

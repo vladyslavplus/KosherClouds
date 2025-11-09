@@ -20,7 +20,7 @@ using System.IO;
             var connectionString = configuration.GetConnectionString("DefaultConnection");
 
             var optionsBuilder = new DbContextOptionsBuilder<OrderDbContext>();
-            optionsBuilder.UseNpgsql(connectionString); 
+            optionsBuilder.UseNpgsql(connectionString);
 
             return new OrderDbContext(optionsBuilder.Options);
         }

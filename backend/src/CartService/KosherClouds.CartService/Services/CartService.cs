@@ -1,27 +1,22 @@
 using KosherClouds.CartService.DTOs;
 using KosherClouds.CartService.Entities;
 using KosherClouds.CartService.Services.Interfaces;
-using KosherClouds.Contracts.Cart;
 using KosherClouds.ServiceDefaults.Redis;
-using MassTransit;
 
 namespace KosherClouds.CartService.Services
 {
     public class CartService : ICartService
     {
         private readonly IRedisCacheService _cache;
-        private readonly IPublishEndpoint _publishEndpoint;
         private readonly ILogger<CartService> _logger;
         private const string CartPrefix = "cart:";
         private static readonly TimeSpan CartTtl = TimeSpan.FromMinutes(30);
 
         public CartService(
             IRedisCacheService cache,
-            IPublishEndpoint publishEndpoint,
             ILogger<CartService> logger)
         {
             _cache = cache;
-            _publishEndpoint = publishEndpoint;
             _logger = logger;
         }
 
@@ -99,33 +94,6 @@ namespace KosherClouds.CartService.Services
             var key = GetCartKey(userId);
             await _cache.RemoveDataAsync(key);
             _logger.LogInformation("Cleared cart for user {UserId}.", userId);
-        }
-
-        public async Task CheckoutAsync(Guid userId)
-        {
-            var key = GetCartKey(userId);
-            var cart = await _cache.GetDataAsync<ShoppingCart>(key);
-
-            if (cart == null || !cart.Items.Any())
-            {
-                _logger.LogWarning("Checkout attempted for empty cart (User: {UserId})", userId);
-                return;
-            }
-
-            var @event = new CartCheckedOutEvent
-            {
-                UserId = userId,
-                Items = cart.Items.Select(i => new CartCheckedOutEvent.CartItem
-                {
-                    ProductId = i.ProductId,
-                    Quantity = i.Quantity
-                }).ToList()
-            };
-
-            await _publishEndpoint.Publish(@event);
-            _logger.LogInformation("Cart checkout event published for user {UserId} with {Count} items.", userId, cart.Items.Count);
-
-            await ClearCartAsync(userId);
         }
     }
 }

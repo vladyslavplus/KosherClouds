@@ -1,7 +1,6 @@
 using KosherClouds.OrderService.Entities;
-using KosherClouds.OrderService.Data;
+using KosherClouds.Common.Seed;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace KosherClouds.OrderService.Data.Seed;
 
@@ -10,89 +9,157 @@ public static class OrderSeeder
     public static async Task SeedAsync(IServiceProvider serviceProvider)
     {
         using var scope = serviceProvider.CreateScope();
-
         var dbContext = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
+        var loggerFactory = scope.ServiceProvider.GetRequiredService<ILoggerFactory>();
+        var logger = loggerFactory.CreateLogger("OrderSeeder");
+
+        try
+        {
+            logger.LogInformation("Applying OrderService database migrations...");
+            await dbContext.Database.MigrateAsync();
+            logger.LogInformation("OrderService migrations applied successfully.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred while applying OrderService migrations.");
+            throw;
+        }
 
         if (!await dbContext.Orders.AnyAsync())
         {
-            var userId1 = new Guid("A1000000-0000-0000-0000-000000000001");
-            var userId2 = new Guid("A1000000-0000-0000-0000-000000000002");
-            var productPizzaId = new Guid("B2000000-0000-0000-0000-000000000001");
-            var productDrinkId = new Guid("B2000000-0000-0000-0000-000000000003");
-            var productSaladId = new Guid("B2000000-0000-0000-0000-000000000002");
+            logger.LogInformation("Starting OrderService data seeding...");
 
-            var order1 = new Order
+            var orders = new List<Order>
             {
-                Id = Guid.NewGuid(),
-                UserId = userId1,
-                Status = "Completed",
-                PaymentMethod = "Card",
-                TotalAmount = 540.00m,
-                CreatedAt = DateTimeOffset.UtcNow.AddDays(-5),
-                Notes = "Pick up at 18:00",
-
-                Items = new List<OrderItem>
+                new Order
                 {
-                    new OrderItem
+                    Id = Guid.NewGuid(),
+                    UserId = SharedSeedData.ManagerId,
+                    Status = "Completed",
+                    TotalAmount = 490.00m,
+                    Notes = "Delivery to office, please call before arrival",
+                    CreatedAt = DateTimeOffset.UtcNow.AddDays(-7),
+                    UpdatedAt = DateTimeOffset.UtcNow.AddDays(-7),
+                    Items = new List<OrderItem>
                     {
-                        Id = Guid.NewGuid(),
-                        ProductId = productPizzaId,
-                        ProductNameSnapshot = "Pepperoni Pizza",
-                        UnitPriceSnapshot = 250.00m,
-                        Quantity = 2
-                    },
-                    new OrderItem
+                        new OrderItem
+                        {
+                            Id = Guid.NewGuid(),
+                            ProductId = SharedSeedData.ProductFalafelSetId,
+                            ProductNameSnapshot = SharedSeedData.ProductFalafelSetName,
+                            UnitPriceSnapshot = SharedSeedData.ProductFalafelSetPrice,
+                            Quantity = 1,
+                            CreatedAt = DateTimeOffset.UtcNow.AddDays(-7),
+                            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-7)
+                        },
+                        new OrderItem
+                        {
+                            Id = Guid.NewGuid(),
+                            ProductId = SharedSeedData.ProductKugelId,
+                            ProductNameSnapshot = SharedSeedData.ProductKugelName,
+                            UnitPriceSnapshot = SharedSeedData.ProductKugelPrice,
+                            Quantity = 2,
+                            CreatedAt = DateTimeOffset.UtcNow.AddDays(-7),
+                            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-7)
+                        }
+                    }
+                },
+
+                new Order
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = SharedSeedData.UserId,
+                    Status = "Pending",
+                    TotalAmount = 350.00m,
+                    Notes = null,
+                    CreatedAt = DateTimeOffset.UtcNow.AddHours(-3),
+                    UpdatedAt = DateTimeOffset.UtcNow.AddHours(-3),
+                    Items = new List<OrderItem>
                     {
-                        Id = Guid.NewGuid(),
-                        ProductId = productDrinkId,
-                        ProductNameSnapshot = "Coca-Cola 0.33L",
-                        UnitPriceSnapshot = 45.00m,
-                        Quantity = 1
+                        new OrderItem
+                        {
+                            Id = Guid.NewGuid(),
+                            ProductId = SharedSeedData.ProductHookahTropicalId,
+                            ProductNameSnapshot = SharedSeedData.ProductHookahTropicalName,
+                            UnitPriceSnapshot = SharedSeedData.ProductHookahTropicalPrice,
+                            Quantity = 1,
+                            CreatedAt = DateTimeOffset.UtcNow.AddHours(-3),
+                            UpdatedAt = DateTimeOffset.UtcNow.AddHours(-3)
+                        }
+                    }
+                },
+
+                new Order
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = SharedSeedData.UserId,
+                    Status = "Draft",
+                    TotalAmount = 620.00m,
+                    Notes = null,
+                    CreatedAt = DateTimeOffset.UtcNow.AddHours(-1),
+                    UpdatedAt = DateTimeOffset.UtcNow.AddHours(-1),
+                    Items = new List<OrderItem>
+                    {
+                        new OrderItem
+                        {
+                            Id = Guid.NewGuid(),
+                            ProductId = SharedSeedData.ProductFalafelSetId,
+                            ProductNameSnapshot = SharedSeedData.ProductFalafelSetName,
+                            UnitPriceSnapshot = SharedSeedData.ProductFalafelSetPrice,
+                            Quantity = 2,
+                            CreatedAt = DateTimeOffset.UtcNow.AddHours(-1),
+                            UpdatedAt = DateTimeOffset.UtcNow.AddHours(-1)
+                        },
+                        new OrderItem
+                        {
+                            Id = Guid.NewGuid(),
+                            ProductId = SharedSeedData.ProductKugelId,
+                            ProductNameSnapshot = SharedSeedData.ProductKugelName,
+                            UnitPriceSnapshot = SharedSeedData.ProductKugelPrice,
+                            Quantity = 1,
+                            CreatedAt = DateTimeOffset.UtcNow.AddHours(-1),
+                            UpdatedAt = DateTimeOffset.UtcNow.AddHours(-1)
+                        }
+                    }
+                },
+
+                new Order
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = SharedSeedData.AdminId,
+                    Status = "Completed",
+                    TotalAmount = 720.00m,
+                    Notes = "Test order for system check",
+                    CreatedAt = DateTimeOffset.UtcNow.AddDays(-2),
+                    UpdatedAt = DateTimeOffset.UtcNow.AddDays(-2),
+                    Items = new List<OrderItem>
+                    {
+                        new OrderItem
+                        {
+                            Id = Guid.NewGuid(),
+                            ProductId = SharedSeedData.ProductKugelId,
+                            ProductNameSnapshot = SharedSeedData.ProductKugelName,
+                            UnitPriceSnapshot = SharedSeedData.ProductKugelPrice,
+                            Quantity = 6,
+                            CreatedAt = DateTimeOffset.UtcNow.AddDays(-2),
+                            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-2)
+                        }
                     }
                 }
             };
 
-            order1.Payments.Add(new PaymentRecord
-            {
-                Id = Guid.NewGuid(),
-                Amount = order1.TotalAmount,
-                Status = "Success",
-                PaymentMethod = "Card",
-                TransactionId = $"TRX_{Guid.NewGuid().ToString().Substring(0, 8)}"
-            });
-
-            var order2 = new Order
-            {
-                Id = Guid.NewGuid(),
-                UserId = userId2,
-                Status = "Pending",
-                PaymentMethod = "Cash",
-                TotalAmount = 180.00m,
-                CreatedAt = DateTimeOffset.UtcNow.AddHours(-2),
-
-                Items = new List<OrderItem>
-                {
-                    new OrderItem
-                    {
-                        Id = Guid.NewGuid(),
-                        ProductId = productSaladId,
-                        ProductNameSnapshot = "Caesar Salad",
-                        UnitPriceSnapshot = 180.00m,
-                        Quantity = 1
-                    }
-                }
-            };
-
-            dbContext.Orders.Add(order1);
-            dbContext.Orders.Add(order2);
-
+            await dbContext.Orders.AddRangeAsync(orders);
             await dbContext.SaveChangesAsync();
 
-            Console.WriteLine("Initial order data (without delivery) successfully added.");
+            var totalItems = orders.Sum(o => o.Items.Count);
+            logger.LogInformation(
+                "OrderService: Successfully seeded {OrderCount} orders with {ItemCount} items.",
+                orders.Count,
+                totalItems);
         }
         else
         {
-            Console.WriteLine("The Orders table already contains data. Seeding skipped.");
+            logger.LogInformation("OrderService: Orders table already contains data. Seeding skipped.");
         }
     }
 }

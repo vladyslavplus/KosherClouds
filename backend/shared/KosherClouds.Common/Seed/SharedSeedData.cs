@@ -20,14 +20,20 @@ public static class SharedSeedData
 
     public const string AdminFirstName = "System";
     public const string AdminLastName = "Administrator";
-
     public const string ManagerFirstName = "John";
     public const string ManagerLastName = "Doe";
-
     public const string UserFirstName = "Jane";
     public const string UserLastName = "Smith";
 
     public static readonly Guid ProductKugelId = Guid.Parse("1a3b5c7d-9e1f-4a2b-3c4d-5e6f7a8b9c0d");
     public static readonly Guid ProductFalafelSetId = Guid.Parse("2b4c6d8e-0f2a-5b3c-4d5e-6f7a8b9c0d1e");
     public static readonly Guid ProductHookahTropicalId = Guid.Parse("5c1f0d3b-9f5e-4f0a-97c4-91c7621f5812");
+
+    public const string ProductKugelName = "Kugel";
+    public const string ProductFalafelSetName = "Falafel Set";
+    public const string ProductHookahTropicalName = "Hookah Tropical";
+
+    public const decimal ProductKugelPrice = 120.00m;
+    public const decimal ProductFalafelSetPrice = 250.00m;
+    public const decimal ProductHookahTropicalPrice = 350.00m;
 }
