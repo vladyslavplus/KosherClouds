@@ -1,9 +1,9 @@
 namespace KosherClouds.ProductService.Entities.Enums;
 public enum ProductCategory
 {
-    Vegetarian,
-    Dish,    
-    Set,    
-    Dessert, 
-    Hookah   
+    Dish,
+    Set,
+    Dessert,
+    Drink,
+    Hookah
 }

@@ -1,54 +1,54 @@
-using Microsoft.EntityFrameworkCore;
-using KosherClouds.ProductService.Repositories.Interfaces;
-using KosherClouds.ProductService.Repositories;
+using KosherClouds.ProductService.Data;
+using KosherClouds.ProductService.Data.Seed;
 using KosherClouds.ProductService.Services;
 using KosherClouds.ProductService.Services.Interfaces;
-using KosherClouds.ProductService.Data;
-using System.Reflection;
+using KosherClouds.ServiceDefaults.Extensions;
+using KosherClouds.ServiceDefaults.Helpers;
+using MassTransit;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ProductDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
-builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 builder.Services.AddAutoMapper(typeof(ProductService).Assembly);
 
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddJwtAuthentication(builder.Configuration);
 
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host(builder.Configuration["RabbitMq:Host"], "/", h =>
+        {
+            h.Username(builder.Configuration["RabbitMq:Username"]!);
+            h.Password(builder.Configuration["RabbitMq:Password"]!);
+        });
+    });
+});
+
+builder.Services.AddScoped(typeof(ISortHelper<>), typeof(SortHelper<>));
+builder.Services.AddSingleton<ISortHelperFactory, SortHelperFactory>();
 builder.Services.AddScoped<IProductService, ProductService>();
-
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
+builder.Services.AddSwaggerWithJwt("KosherClouds ProductService API");
 
 var app = builder.Build();
+
+await ProductSeeder.SeedAsync(app.Services);
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-
-    using (var scope = app.Services.CreateScope())
-    {
-        var serviceProvider = scope.ServiceProvider;
-        try
-        {
-            await ProductSeeder.SeedAsync(serviceProvider);
-        }
-        catch (Exception ex)
-        {
-            var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "An error occurred while seeding the database.");
-        }
-    }
 }
 
 app.UseHttpsRedirection();
+app.UseGlobalExceptionHandler();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
-app.Run();
+await app.RunAsync();
