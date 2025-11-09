@@ -125,14 +125,45 @@ services:
       Jwt__Key: ${JWT_KEY}
       Jwt__Issuer: ${JWT_ISSUER}
       Jwt__Audience: ${JWT_AUDIENCE}
-      RabbitMq__Host: rabbitmq
-      RabbitMq__Username: ${RABBITMQ_DEFAULT_USER}
-      RabbitMq__Password: ${RABBITMQ_DEFAULT_PASS}
     depends_on:
       redis:
         condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - kosherclouds-network
+
+  orderservice:
+    build:
+      context: .
+      dockerfile: ./backend/src/OrderService/KosherClouds.OrderService/Dockerfile
+    container_name: orderservice
+    ports:
+      - "5005:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Database=${ORDER_SERVICE_DB};
+      Jwt__Key: ${JWT_KEY}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Username: ${RABBITMQ_DEFAULT_USER}
+      RabbitMq__Password: ${RABBITMQ_DEFAULT_PASS}
+      ServiceUrls__CartService: http://cartservice:8080
+      ServiceUrls__ProductService: http://productservice:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      cartservice:
+        condition: service_started
+      productservice:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/health/ready || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
     networks:
       - kosherclouds-network
