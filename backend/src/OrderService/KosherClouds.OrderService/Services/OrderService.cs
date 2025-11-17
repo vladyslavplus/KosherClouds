@@ -241,6 +241,20 @@ namespace KosherClouds.OrderService.Services
             return _mapper.Map<OrderResponseDto>(order);
         }
 
+        public async Task MarkOrderAsPaidAsync(Guid orderId, CancellationToken cancellationToken = default)
+        {
+            var order = await _dbContext.Orders
+                .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken);
+
+            if (order == null)
+                throw new KeyNotFoundException($"Order {orderId} not found.");
+
+            order.Status = "Paid";
+            order.UpdatedAt = DateTimeOffset.UtcNow;
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
+
         public async Task UpdateOrderAsync(
             Guid orderId,
             OrderUpdateDto orderDto,

@@ -1,3 +1,4 @@
+using KosherClouds.OrderService.Consumers;
 using KosherClouds.OrderService.Data;
 using KosherClouds.OrderService.Data.Seed;
 using KosherClouds.OrderService.Handlers;
@@ -39,6 +40,8 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 
 builder.Services.AddMassTransit(x =>
 {
+    x.AddConsumer<PaymentCompletedConsumer>();
+
     x.UsingRabbitMq((context, cfg) =>
     {
         cfg.Host(builder.Configuration["RabbitMq:Host"], "/", h =>
@@ -46,6 +49,12 @@ builder.Services.AddMassTransit(x =>
             h.Username(builder.Configuration["RabbitMq:Username"]!);
             h.Password(builder.Configuration["RabbitMq:Password"]!);
         });
+
+        cfg.ReceiveEndpoint("order-payment-completed-queue", e =>
+        {
+            e.ConfigureConsumer<PaymentCompletedConsumer>(context);
+        });
+
         cfg.ConfigureEndpoints(context);
     });
 });

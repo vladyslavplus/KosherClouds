@@ -28,6 +28,10 @@ namespace KosherClouds.OrderService.Services.Interfaces
             string? notes,
             CancellationToken cancellationToken = default);
 
+        Task MarkOrderAsPaidAsync(
+            Guid orderId, 
+            CancellationToken cancellationToken = default);
+
         Task UpdateOrderAsync(
             Guid orderId,
             OrderUpdateDto orderDto,

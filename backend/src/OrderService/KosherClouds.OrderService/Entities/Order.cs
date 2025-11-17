@@ -13,7 +13,7 @@ namespace KosherClouds.OrderService.Entities
 
         [Required]
         [MaxLength(50)]
-        public string Status { get; set; } = "Pending"; // Pending, Completed, Canceled, etc.
+        public string Status { get; set; } = "Pending"; // Pending, Paid, Canceled, etc.
 
         [Required]
         [Precision(18, 2)]
