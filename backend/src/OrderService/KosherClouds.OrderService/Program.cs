@@ -1,11 +1,11 @@
 using KosherClouds.OrderService.Consumers;
 using KosherClouds.OrderService.Data;
 using KosherClouds.OrderService.Data.Seed;
-using KosherClouds.OrderService.Handlers;
 using KosherClouds.OrderService.Services;
 using KosherClouds.OrderService.Services.External;
 using KosherClouds.OrderService.Services.Interfaces;
 using KosherClouds.ServiceDefaults.Extensions;
+using KosherClouds.ServiceDefaults.Handlers;
 using KosherClouds.ServiceDefaults.Helpers;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;

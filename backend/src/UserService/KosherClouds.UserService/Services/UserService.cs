@@ -1,4 +1,5 @@
 ﻿using KosherClouds.ServiceDefaults.Helpers;
+using KosherClouds.UserService.DTOs.User;
 using KosherClouds.UserService.Entities;
 using KosherClouds.UserService.Parameters;
 using KosherClouds.UserService.Services.Interfaces;
@@ -72,6 +73,23 @@ namespace KosherClouds.UserService.Services
             return await _userManager.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+        }
+
+        public async Task<UserPublicDto?> GetUserPublicInfoAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            var user = await _userManager.Users
+                .AsNoTracking()
+                .Where(u => u.Id == id)
+                .Select(u => new UserPublicDto
+                {
+                    Id = u.Id,
+                    UserName = u.UserName,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName
+                })
+                .FirstOrDefaultAsync(cancellationToken);
+
+            return user;
         }
 
         public async Task<bool> DeleteUserAsync(Guid id, CancellationToken cancellationToken = default)

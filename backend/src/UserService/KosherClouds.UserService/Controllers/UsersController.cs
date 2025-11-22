@@ -41,6 +41,15 @@ namespace KosherClouds.UserService.Controllers
             return Ok(user);
         }
 
+        [HttpGet("{id:guid}/public")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetUserPublicInfo(Guid id, CancellationToken cancellationToken)
+        {
+            var user = await _userService.GetUserPublicInfoAsync(id, cancellationToken);
+            if (user == null) return NotFound();
+            return Ok(user);
+        }
+
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteUser(Guid id, CancellationToken cancellationToken)
         {

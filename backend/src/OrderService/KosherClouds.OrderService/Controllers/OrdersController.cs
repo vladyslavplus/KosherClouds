@@ -21,11 +21,21 @@ namespace KosherClouds.OrderService.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin, Manager")]
         public async Task<IActionResult> GetOrders(
             [FromQuery] OrderParameters parameters,
             CancellationToken cancellationToken)
         {
+            var userId = User.GetUserId();
+            if (userId == null)
+                return Unauthorized();
+
+            var isAdminOrManager = User.IsAdminOrManager();
+
+            if (!isAdminOrManager)
+            {
+                parameters.UserId = userId;
+            }
+
             var orders = await _orderService.GetOrdersAsync(parameters, cancellationToken);
 
             Response.Headers["X-Pagination"] = JsonSerializer.Serialize(new

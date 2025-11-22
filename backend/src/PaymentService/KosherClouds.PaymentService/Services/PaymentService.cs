@@ -88,7 +88,7 @@ namespace KosherClouds.PaymentService.Services
                 };
             }
 
-            var paymentStatus = intent.Status == "succeeded" ? "Completed" : "Pending";
+            var paymentStatus = intent.Status == "succeeded" ? "Paid" : "Pending";
 
             var payment = new DbPaymentRecord
             {
@@ -105,7 +105,7 @@ namespace KosherClouds.PaymentService.Services
             await _dbContext.SaveChangesAsync(cancellationToken);
             _logger.LogInformation("Payment {Status}: {PaymentId} ({StripeId})", paymentStatus, payment.Id, intent.Id);
 
-            if (paymentStatus == "Completed")
+            if (paymentStatus == "Paid")
             {
                 await _publishEndpoint.Publish(new PaymentCompletedEvent
                 {

@@ -36,4 +36,12 @@ public static class SharedSeedData
     public const decimal ProductKugelPrice = 120.00m;
     public const decimal ProductFalafelSetPrice = 250.00m;
     public const decimal ProductHookahTropicalPrice = 350.00m;
+
+    public static readonly Guid Order1Id = Guid.Parse("11111111-1111-1111-1111-111111111111");
+    public static readonly Guid Order2Id = Guid.Parse("22222222-2222-2222-2222-222222222222");
+    public static readonly Guid Order3Id = Guid.Parse("33333333-3333-3333-3333-333333333333");
+
+    public static readonly Guid Review1Id = Guid.Parse("e1111111-1111-1111-1111-111111111111");
+    public static readonly Guid Review2Id = Guid.Parse("e2222222-2222-2222-2222-222222222222");
+    public static readonly Guid Review3Id = Guid.Parse("e3333333-3333-3333-3333-333333333333");
 }

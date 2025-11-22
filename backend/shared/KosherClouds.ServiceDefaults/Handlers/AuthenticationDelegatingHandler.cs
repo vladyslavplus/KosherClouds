@@ -1,6 +1,8 @@
-﻿using System.Net.Http.Headers;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using System.Net.Http.Headers;
 
-namespace KosherClouds.OrderService.Handlers
+namespace KosherClouds.ServiceDefaults.Handlers
 {
     public class AuthenticationDelegatingHandler : DelegatingHandler
     {

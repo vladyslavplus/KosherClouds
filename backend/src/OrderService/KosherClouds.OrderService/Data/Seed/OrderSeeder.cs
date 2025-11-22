@@ -1,165 +1,127 @@
-using KosherClouds.OrderService.Entities;
 using KosherClouds.Common.Seed;
+using KosherClouds.OrderService.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace KosherClouds.OrderService.Data.Seed;
-
-public static class OrderSeeder
+namespace KosherClouds.OrderService.Data.Seed
 {
-    public static async Task SeedAsync(IServiceProvider serviceProvider)
+    public static class OrderSeeder
     {
-        using var scope = serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
-        var loggerFactory = scope.ServiceProvider.GetRequiredService<ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger("OrderSeeder");
-
-        try
+        public static async Task SeedAsync(IServiceProvider serviceProvider)
         {
-            logger.LogInformation("Applying OrderService database migrations...");
-            await dbContext.Database.MigrateAsync();
-            logger.LogInformation("OrderService migrations applied successfully.");
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "An error occurred while applying OrderService migrations.");
-            throw;
-        }
+            using var scope = serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
 
-        if (!await dbContext.Orders.AnyAsync())
-        {
-            logger.LogInformation("Starting OrderService data seeding...");
+            await context.Database.MigrateAsync();
 
-            var orders = new List<Order>
+            if (await context.Orders.AnyAsync())
             {
-                new Order
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = SharedSeedData.ManagerId,
-                    Status = "Completed",
-                    TotalAmount = 490.00m,
-                    Notes = "Delivery to office, please call before arrival",
-                    CreatedAt = DateTimeOffset.UtcNow.AddDays(-7),
-                    UpdatedAt = DateTimeOffset.UtcNow.AddDays(-7),
-                    Items = new List<OrderItem>
-                    {
-                        new OrderItem
-                        {
-                            Id = Guid.NewGuid(),
-                            ProductId = SharedSeedData.ProductFalafelSetId,
-                            ProductNameSnapshot = SharedSeedData.ProductFalafelSetName,
-                            UnitPriceSnapshot = SharedSeedData.ProductFalafelSetPrice,
-                            Quantity = 1,
-                            CreatedAt = DateTimeOffset.UtcNow.AddDays(-7),
-                            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-7)
-                        },
-                        new OrderItem
-                        {
-                            Id = Guid.NewGuid(),
-                            ProductId = SharedSeedData.ProductKugelId,
-                            ProductNameSnapshot = SharedSeedData.ProductKugelName,
-                            UnitPriceSnapshot = SharedSeedData.ProductKugelPrice,
-                            Quantity = 2,
-                            CreatedAt = DateTimeOffset.UtcNow.AddDays(-7),
-                            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-7)
-                        }
-                    }
-                },
+                return;
+            }
 
-                new Order
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = SharedSeedData.UserId,
-                    Status = "Pending",
-                    TotalAmount = 350.00m,
-                    Notes = null,
-                    CreatedAt = DateTimeOffset.UtcNow.AddHours(-3),
-                    UpdatedAt = DateTimeOffset.UtcNow.AddHours(-3),
-                    Items = new List<OrderItem>
-                    {
-                        new OrderItem
-                        {
-                            Id = Guid.NewGuid(),
-                            ProductId = SharedSeedData.ProductHookahTropicalId,
-                            ProductNameSnapshot = SharedSeedData.ProductHookahTropicalName,
-                            UnitPriceSnapshot = SharedSeedData.ProductHookahTropicalPrice,
-                            Quantity = 1,
-                            CreatedAt = DateTimeOffset.UtcNow.AddHours(-3),
-                            UpdatedAt = DateTimeOffset.UtcNow.AddHours(-3)
-                        }
-                    }
-                },
+            var createdAt = DateTimeOffset.UtcNow.AddDays(-10);
 
-                new Order
-                {
-                    Id = Guid.NewGuid(),
-                    UserId = SharedSeedData.UserId,
-                    Status = "Draft",
-                    TotalAmount = 620.00m,
-                    Notes = null,
-                    CreatedAt = DateTimeOffset.UtcNow.AddHours(-1),
-                    UpdatedAt = DateTimeOffset.UtcNow.AddHours(-1),
-                    Items = new List<OrderItem>
-                    {
-                        new OrderItem
-                        {
-                            Id = Guid.NewGuid(),
-                            ProductId = SharedSeedData.ProductFalafelSetId,
-                            ProductNameSnapshot = SharedSeedData.ProductFalafelSetName,
-                            UnitPriceSnapshot = SharedSeedData.ProductFalafelSetPrice,
-                            Quantity = 2,
-                            CreatedAt = DateTimeOffset.UtcNow.AddHours(-1),
-                            UpdatedAt = DateTimeOffset.UtcNow.AddHours(-1)
-                        },
-                        new OrderItem
-                        {
-                            Id = Guid.NewGuid(),
-                            ProductId = SharedSeedData.ProductKugelId,
-                            ProductNameSnapshot = SharedSeedData.ProductKugelName,
-                            UnitPriceSnapshot = SharedSeedData.ProductKugelPrice,
-                            Quantity = 1,
-                            CreatedAt = DateTimeOffset.UtcNow.AddHours(-1),
-                            UpdatedAt = DateTimeOffset.UtcNow.AddHours(-1)
-                        }
-                    }
-                },
+            var order1 = new Order
+            {
+                Id = SharedSeedData.Order1Id,
+                UserId = SharedSeedData.UserId,
+                Status = "Paid",
+                TotalAmount = SharedSeedData.ProductKugelPrice * 2 + SharedSeedData.ProductFalafelSetPrice,
+                Notes = "Please deliver to the front desk",
+                CreatedAt = createdAt,
+                UpdatedAt = createdAt
+            };
 
-                new Order
+            order1.Items = new List<OrderItem>
+            {
+                new OrderItem
                 {
                     Id = Guid.NewGuid(),
-                    UserId = SharedSeedData.AdminId,
-                    Status = "Completed",
-                    TotalAmount = 720.00m,
-                    Notes = "Test order for system check",
-                    CreatedAt = DateTimeOffset.UtcNow.AddDays(-2),
-                    UpdatedAt = DateTimeOffset.UtcNow.AddDays(-2),
-                    Items = new List<OrderItem>
-                    {
-                        new OrderItem
-                        {
-                            Id = Guid.NewGuid(),
-                            ProductId = SharedSeedData.ProductKugelId,
-                            ProductNameSnapshot = SharedSeedData.ProductKugelName,
-                            UnitPriceSnapshot = SharedSeedData.ProductKugelPrice,
-                            Quantity = 6,
-                            CreatedAt = DateTimeOffset.UtcNow.AddDays(-2),
-                            UpdatedAt = DateTimeOffset.UtcNow.AddDays(-2)
-                        }
-                    }
+                    OrderId = order1.Id,
+                    ProductId = SharedSeedData.ProductKugelId,
+                    ProductNameSnapshot = SharedSeedData.ProductKugelName,
+                    UnitPriceSnapshot = SharedSeedData.ProductKugelPrice,
+                    Quantity = 2,
+                    CreatedAt = createdAt,
+                    UpdatedAt = createdAt
+                },
+                new OrderItem
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = order1.Id,
+                    ProductId = SharedSeedData.ProductFalafelSetId,
+                    ProductNameSnapshot = SharedSeedData.ProductFalafelSetName,
+                    UnitPriceSnapshot = SharedSeedData.ProductFalafelSetPrice,
+                    Quantity = 1,
+                    CreatedAt = createdAt,
+                    UpdatedAt = createdAt
                 }
             };
 
-            await dbContext.Orders.AddRangeAsync(orders);
-            await dbContext.SaveChangesAsync();
+            var order2 = new Order
+            {
+                Id = SharedSeedData.Order2Id,
+                UserId = SharedSeedData.ManagerId,
+                Status = "Paid",
+                TotalAmount = SharedSeedData.ProductHookahTropicalPrice * 2,
+                Notes = null,
+                CreatedAt = createdAt.AddDays(2),
+                UpdatedAt = createdAt.AddDays(2)
+            };
 
-            var totalItems = orders.Sum(o => o.Items.Count);
-            logger.LogInformation(
-                "OrderService: Successfully seeded {OrderCount} orders with {ItemCount} items.",
-                orders.Count,
-                totalItems);
-        }
-        else
-        {
-            logger.LogInformation("OrderService: Orders table already contains data. Seeding skipped.");
+            order2.Items = new List<OrderItem>
+            {
+                new OrderItem
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = order2.Id,
+                    ProductId = SharedSeedData.ProductHookahTropicalId,
+                    ProductNameSnapshot = SharedSeedData.ProductHookahTropicalName,
+                    UnitPriceSnapshot = SharedSeedData.ProductHookahTropicalPrice,
+                    Quantity = 2,
+                    CreatedAt = createdAt.AddDays(2),
+                    UpdatedAt = createdAt.AddDays(2)
+                }
+            };
+
+            var order3 = new Order
+            {
+                Id = SharedSeedData.Order3Id,
+                UserId = SharedSeedData.UserId,
+                Status = "Paid",
+                TotalAmount = SharedSeedData.ProductFalafelSetPrice + SharedSeedData.ProductHookahTropicalPrice,
+                Notes = "Thank you!",
+                CreatedAt = DateTimeOffset.UtcNow.AddDays(-5),
+                UpdatedAt = DateTimeOffset.UtcNow.AddDays(-5)
+            };
+
+            order3.Items = new List<OrderItem>
+            {
+                new OrderItem
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = order3.Id,
+                    ProductId = SharedSeedData.ProductFalafelSetId,
+                    ProductNameSnapshot = SharedSeedData.ProductFalafelSetName,
+                    UnitPriceSnapshot = SharedSeedData.ProductFalafelSetPrice,
+                    Quantity = 1,
+                    CreatedAt = DateTimeOffset.UtcNow.AddDays(-5),
+                    UpdatedAt = DateTimeOffset.UtcNow.AddDays(-5)
+                },
+                new OrderItem
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = order3.Id,
+                    ProductId = SharedSeedData.ProductHookahTropicalId,
+                    ProductNameSnapshot = SharedSeedData.ProductHookahTropicalName,
+                    UnitPriceSnapshot = SharedSeedData.ProductHookahTropicalPrice,
+                    Quantity = 1,
+                    CreatedAt = DateTimeOffset.UtcNow.AddDays(-5),
+                    UpdatedAt = DateTimeOffset.UtcNow.AddDays(-5)
+                }
+            };
+
+            await context.Orders.AddRangeAsync(order1, order2, order3);
+            await context.SaveChangesAsync();
         }
     }
 }
