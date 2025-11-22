@@ -9,7 +9,6 @@ namespace KosherClouds.ServiceDefaults.Extensions
         {
             var idClaim = user.FindFirstValue(ClaimTypes.NameIdentifier)
                         ?? user.FindFirstValue(JwtRegisteredClaimNames.Sub);
-
             return Guid.TryParse(idClaim, out var id) ? id : null;
         }
 
@@ -23,6 +22,21 @@ namespace KosherClouds.ServiceDefaults.Extensions
         {
             return user.FindFirstValue(ClaimTypes.Name)
                 ?? user.Identity?.Name;
+        }
+
+        public static bool IsAdmin(this ClaimsPrincipal user)
+        {
+            return user.IsInRole("Admin");
+        }
+
+        public static bool IsManager(this ClaimsPrincipal user)
+        {
+            return user.IsInRole("Manager");
+        }
+
+        public static bool IsAdminOrManager(this ClaimsPrincipal user)
+        {
+            return user.IsInRole("Admin") || user.IsInRole("Manager");
         }
     }
 }
