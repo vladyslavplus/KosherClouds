@@ -13,6 +13,90 @@ namespace KosherClouds.NotificationService.Services
             decimal totalAmount,
             DateTimeOffset orderDate)
         {
+            var contentBuilder = new StringBuilder();
+            contentBuilder.AppendLine($"            <p>Dear {userName},</p>");
+            contentBuilder.AppendLine("            <p>Thank you for your order! We're excited to prepare your delicious kosher meal.</p>");
+            contentBuilder.AppendLine("            <div class='order-details'>");
+            contentBuilder.AppendLine($"                <p><strong>Order ID:</strong> {orderId}</p>");
+            contentBuilder.AppendLine($"                <p><strong>Order Date:</strong> {orderDate:MMMM dd, yyyy HH:mm}</p>");
+            contentBuilder.AppendLine("                <h3>Order Items:</h3>");
+
+            foreach (var item in items)
+            {
+                contentBuilder.AppendLine("                <div class='item'>");
+                contentBuilder.AppendLine($"                    <strong>{item.ProductName}</strong><br>");
+                contentBuilder.AppendLine($"                    Quantity: {item.Quantity} × ${item.UnitPrice:F2} = <strong>${item.LineTotal:F2}</strong>");
+                contentBuilder.AppendLine("                </div>");
+            }
+
+            contentBuilder.AppendLine($"                <div class='total'>Total Amount: ${totalAmount:F2}</div>");
+            contentBuilder.AppendLine("            </div>");
+            contentBuilder.AppendLine("            <p>Your order is being prepared and will be ready soon. We'll notify you once it's ready for pickup.</p>");
+            contentBuilder.AppendLine("            <p>If you have any questions, please don't hesitate to contact us.</p>");
+
+            return GenerateEmailTemplate("Order Confirmation", contentBuilder.ToString());
+        }
+
+        public string GenerateWelcomeEmail(string userName)
+        {
+            var contentBuilder = new StringBuilder();
+            contentBuilder.AppendLine($"            <p>Dear {userName},</p>");
+            contentBuilder.AppendLine("            <p>Welcome to <strong>Kosher Clouds</strong>!</p>");
+            contentBuilder.AppendLine("            <p>We're thrilled to have you join our community. At Kosher Clouds, we're dedicated to bringing you the finest kosher cuisine with a modern twist.</p>");
+            contentBuilder.AppendLine("            <div class='order-details'>");
+            contentBuilder.AppendLine("                <h3>What's Next?</h3>");
+            contentBuilder.AppendLine("                <div class='item'>");
+            contentBuilder.AppendLine("                    <strong>🍽️ Browse Our Menu</strong><br>");
+            contentBuilder.AppendLine("                    Discover our wide selection of delicious kosher dishes prepared with the finest ingredients.");
+            contentBuilder.AppendLine("                </div>");
+            contentBuilder.AppendLine("                <div class='item'>");
+            contentBuilder.AppendLine("                    <strong>🛒 Place Your First Order</strong><br>");
+            contentBuilder.AppendLine("                    Ready to taste the difference? Order now and enjoy authentic kosher flavors delivered fresh.");
+            contentBuilder.AppendLine("                </div>");
+            contentBuilder.AppendLine("                <div class='item'>");
+            contentBuilder.AppendLine("                    <strong>💬 Share Feedback</strong><br>");
+            contentBuilder.AppendLine("                    We value your opinion! Leave reviews and help us serve you better.");
+            contentBuilder.AppendLine("                </div>");
+            contentBuilder.AppendLine("            </div>");
+            contentBuilder.AppendLine("            <p>If you have any questions or need assistance, our team is here to help.</p>");
+            contentBuilder.AppendLine("            <p>Thank you for choosing Kosher Clouds. We look forward to serving you!</p>");
+
+            return GenerateEmailTemplate("Welcome to Kosher Clouds!", contentBuilder.ToString());
+        }
+
+        public string GenerateBookingConfirmationEmail(
+            string userName,
+            Guid bookingId,
+            DateTime bookingDateTime)
+        {
+            var contentBuilder = new StringBuilder();
+            contentBuilder.AppendLine($"            <p>Dear {userName},</p>");
+            contentBuilder.AppendLine("            <p>Your table reservation has been confirmed!</p>");
+            contentBuilder.AppendLine("            <div class='order-details'>");
+            contentBuilder.AppendLine($"                <p><strong>Booking ID:</strong> {bookingId}</p>");
+            contentBuilder.AppendLine($"                <p><strong>Date & Time:</strong> {bookingDateTime:dddd, MMMM dd, yyyy 'at' HH:mm}</p>");
+            contentBuilder.AppendLine("                <div class='item'>");
+            contentBuilder.AppendLine("                    <strong>📍 Location</strong><br>");
+            contentBuilder.AppendLine("                    Kosher Clouds Restaurant<br>");
+            contentBuilder.AppendLine("                    We look forward to serving you!");
+            contentBuilder.AppendLine("                </div>");
+            contentBuilder.AppendLine("                <div class='item'>");
+            contentBuilder.AppendLine("                    <strong>⏰ Important Reminder</strong><br>");
+            contentBuilder.AppendLine("                    Please arrive on time. If you need to cancel or modify your reservation, please contact us at least 2 hours in advance.");
+            contentBuilder.AppendLine("                </div>");
+            contentBuilder.AppendLine("                <div class='item'>");
+            contentBuilder.AppendLine("                    <strong>📞 Contact Us</strong><br>");
+            contentBuilder.AppendLine("                    If you have any questions or special requests, feel free to reach out to us.");
+            contentBuilder.AppendLine("                </div>");
+            contentBuilder.AppendLine("            </div>");
+            contentBuilder.AppendLine("            <p>We're excited to welcome you to Kosher Clouds!</p>");
+            contentBuilder.AppendLine("            <p>See you soon!</p>");
+
+            return GenerateEmailTemplate("Booking Confirmation", contentBuilder.ToString());
+        }
+
+        private static string GenerateEmailTemplate(string title, string content)
+        {
             var sb = new StringBuilder();
 
             sb.AppendLine("<!DOCTYPE html>");
@@ -34,28 +118,10 @@ namespace KosherClouds.NotificationService.Services
             sb.AppendLine("<body>");
             sb.AppendLine("    <div class='container'>");
             sb.AppendLine("        <div class='header'>");
-            sb.AppendLine("            <h1>Order Confirmation</h1>");
+            sb.AppendLine($"            <h1>{title}</h1>");
             sb.AppendLine("        </div>");
             sb.AppendLine("        <div class='content'>");
-            sb.AppendLine($"            <p>Dear {userName},</p>");
-            sb.AppendLine("            <p>Thank you for your order! We're excited to prepare your delicious kosher meal.</p>");
-            sb.AppendLine("            <div class='order-details'>");
-            sb.AppendLine($"                <p><strong>Order ID:</strong> {orderId}</p>");
-            sb.AppendLine($"                <p><strong>Order Date:</strong> {orderDate:MMMM dd, yyyy HH:mm}</p>");
-            sb.AppendLine("                <h3>Order Items:</h3>");
-
-            foreach (var item in items)
-            {
-                sb.AppendLine("                <div class='item'>");
-                sb.AppendLine($"                    <strong>{item.ProductName}</strong><br>");
-                sb.AppendLine($"                    Quantity: {item.Quantity} × ${item.UnitPrice:F2} = <strong>${item.LineTotal:F2}</strong>");
-                sb.AppendLine("                </div>");
-            }
-
-            sb.AppendLine($"                <div class='total'>Total Amount: ${totalAmount:F2}</div>");
-            sb.AppendLine("            </div>");
-            sb.AppendLine("            <p>Your order is being prepared and will be ready soon. We'll notify you once it's ready for pickup or delivery.</p>");
-            sb.AppendLine("            <p>If you have any questions, please don't hesitate to contact us.</p>");
+            sb.Append(content);
             sb.AppendLine("        </div>");
             sb.AppendLine("        <div class='footer'>");
             sb.AppendLine("            <p>With respect,<br><strong>Kosher Clouds Team</strong></p>");

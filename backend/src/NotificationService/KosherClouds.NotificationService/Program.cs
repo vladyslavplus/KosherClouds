@@ -24,6 +24,8 @@ builder.Services.AddScoped<IEmailTemplateService, EmailTemplateService>();
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<OrderCreatedConsumer>();
+    x.AddConsumer<UserRegisteredConsumer>();
+    x.AddConsumer<BookingCreatedConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
     {
@@ -36,6 +38,16 @@ builder.Services.AddMassTransit(x =>
         cfg.ReceiveEndpoint("notification-order-created-queue", e =>
         {
             e.ConfigureConsumer<OrderCreatedConsumer>(context);
+        });
+
+        cfg.ReceiveEndpoint("notification-user-registered-queue", e =>
+        {
+            e.ConfigureConsumer<UserRegisteredConsumer>(context);
+        });
+
+        cfg.ReceiveEndpoint("notification-booking-created-queue", e =>
+        {
+            e.ConfigureConsumer<BookingCreatedConsumer>(context);
         });
 
         cfg.ConfigureEndpoints(context);

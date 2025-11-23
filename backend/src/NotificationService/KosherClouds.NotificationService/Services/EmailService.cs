@@ -56,11 +56,9 @@ namespace KosherClouds.NotificationService.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(
-                    ex,
-                    "Failed to send email to {To} with subject '{Subject}'",
-                    message.To,
-                    message.Subject);
+                throw new InvalidOperationException(
+                    $"Failed to send email to {message.To} with subject '{message.Subject}'",
+                    ex);
             }
         }
 

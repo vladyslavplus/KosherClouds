@@ -10,5 +10,12 @@ namespace KosherClouds.NotificationService.Services.Interfaces
             List<OrderItemInfo> items,
             decimal totalAmount,
             DateTimeOffset orderDate);
+
+        string GenerateWelcomeEmail(string userName);
+
+        string GenerateBookingConfirmationEmail(
+            string userName,
+            Guid bookingId,
+            DateTime bookingDateTime);
     }
 }
