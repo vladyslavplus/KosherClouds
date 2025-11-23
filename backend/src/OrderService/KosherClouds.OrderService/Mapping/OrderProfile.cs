@@ -17,6 +17,7 @@ namespace KosherClouds.OrderService.Mapping
                 .ForMember(dest => dest.TotalAmount, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.PaymentType, opt => opt.MapFrom(src => src.PaymentType))
                 .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.Items));
         }
     }

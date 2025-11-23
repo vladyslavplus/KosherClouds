@@ -55,12 +55,11 @@ namespace KosherClouds.OrderService.Services
             if (parameters.UserId.HasValue)
                 query = query.Where(o => o.UserId == parameters.UserId.Value);
 
-            if (!string.IsNullOrWhiteSpace(parameters.Status))
-            {
-                query = _isInMemory
-                    ? query.Where(o => o.Status.Contains(parameters.Status, StringComparison.OrdinalIgnoreCase))
-                    : query.Where(o => EF.Functions.ILike(o.Status, $"%{parameters.Status}%"));
-            }
+            if (parameters.Status.HasValue)
+                query = query.Where(o => o.Status == parameters.Status.Value);
+
+            if (parameters.PaymentType.HasValue)
+                query = query.Where(o => o.PaymentType == parameters.PaymentType.Value);
 
             if (!string.IsNullOrWhiteSpace(parameters.SearchTerm))
             {
@@ -161,6 +160,7 @@ namespace KosherClouds.OrderService.Services
             var orderDto = new OrderCreateDto
             {
                 UserId = userId,
+                PaymentType = PaymentType.OnPickup,
                 Items = orderItems
             };
 
@@ -195,7 +195,7 @@ namespace KosherClouds.OrderService.Services
             CancellationToken cancellationToken = default)
         {
             var order = _mapper.Map<Order>(orderDto);
-            order.Status = "Draft";
+            order.Status = OrderStatus.Draft;
             order.TotalAmount = order.Items.Sum(i => i.UnitPriceSnapshot * i.Quantity);
 
             await _dbContext.Orders.AddAsync(order, cancellationToken);
@@ -209,7 +209,7 @@ namespace KosherClouds.OrderService.Services
         public async Task<OrderResponseDto> ConfirmOrderAsync(
             Guid orderId,
             Guid userId,
-            string? notes,
+            OrderConfirmDto? request,
             CancellationToken cancellationToken = default)
         {
             var order = await _dbContext.Orders
@@ -222,17 +222,38 @@ namespace KosherClouds.OrderService.Services
             if (order.UserId != userId)
                 throw new UnauthorizedAccessException($"User {userId} is not authorized to confirm order {orderId}");
 
-            if (order.Status != "Draft")
+            if (order.Status != OrderStatus.Draft)
                 throw new InvalidOperationException(
                     $"Only Draft orders can be confirmed. Current status: {order.Status}");
 
-            order.Status = "Pending";
-            if (!string.IsNullOrEmpty(notes))
-                order.Notes = notes;
+            order.Status = OrderStatus.Pending;
+
+            if (request != null)
+            {
+                if (!string.IsNullOrEmpty(request.Notes))
+                    order.Notes = request.Notes;
+
+                order.PaymentType = request.PaymentType;
+            }
+
             order.UpdatedAt = DateTimeOffset.UtcNow;
 
             await _dbContext.SaveChangesAsync(cancellationToken);
-            await PublishOrderCreatedEvent(order, cancellationToken);
+
+            if (order.PaymentType == PaymentType.OnPickup)
+            {
+                await PublishOrderCreatedEvent(order, cancellationToken);
+
+                _logger.LogInformation(
+                    "Order {OrderId} confirmed with Payment On Pickup. OrderCreatedEvent published.",
+                    orderId);
+            }
+            else
+            {
+                _logger.LogInformation(
+                    "Order {OrderId} confirmed with Online Payment. Waiting for payment completion.",
+                    orderId);
+            }
 
             _logger.LogInformation(
                 "Order {OrderId} confirmed by user {UserId} and moved to Pending",
@@ -249,10 +270,12 @@ namespace KosherClouds.OrderService.Services
             if (order == null)
                 throw new KeyNotFoundException($"Order {orderId} not found.");
 
-            order.Status = "Paid";
+            order.Status = OrderStatus.Paid;
             order.UpdatedAt = DateTimeOffset.UtcNow;
 
             await _dbContext.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("Order {OrderId} marked as Paid", orderId);
         }
 
         public async Task UpdateOrderAsync(
@@ -267,8 +290,8 @@ namespace KosherClouds.OrderService.Services
             if (order == null)
                 throw new KeyNotFoundException($"Order with ID '{orderId}' not found.");
 
-            if (!string.IsNullOrEmpty(orderDto.Status))
-                order.Status = orderDto.Status;
+            if (orderDto.Status.HasValue)
+                order.Status = orderDto.Status.Value;
 
             if (!string.IsNullOrEmpty(orderDto.Notes))
                 order.Notes = orderDto.Notes;
@@ -279,7 +302,7 @@ namespace KosherClouds.OrderService.Services
             await _publishEndpoint.Publish(new OrderUpdatedEvent
             {
                 OrderId = order.Id,
-                Status = order.Status,
+                Status = order.Status.ToString(),
                 Notes = order.Notes,
                 UpdatedAt = order.UpdatedAt
             }, cancellationToken);
@@ -317,7 +340,15 @@ namespace KosherClouds.OrderService.Services
                 OrderId = order.Id,
                 UserId = order.UserId,
                 TotalAmount = order.TotalAmount,
-                CreatedAt = order.CreatedAt
+                CreatedAt = order.CreatedAt,
+                Items = order.Items.Select(item => new OrderItemInfo
+                {
+                    ProductId = item.ProductId,
+                    ProductName = item.ProductNameSnapshot,
+                    UnitPrice = item.UnitPriceSnapshot,
+                    Quantity = item.Quantity,
+                    LineTotal = item.LineTotal
+                }).ToList()
             }, token);
 
             _logger.LogInformation("Published OrderCreatedEvent for {Id}", order.Id);

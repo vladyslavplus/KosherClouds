@@ -52,6 +52,16 @@ services:
     networks:
       - kosherclouds-network
 
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - kosherclouds-network
+
   userservice:
     build:
       context: .
@@ -225,6 +235,71 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+    networks:
+      - kosherclouds-network
+
+  reviewservice:
+    build:
+      context: .
+      dockerfile: ./backend/src/ReviewService/KosherClouds.ReviewService/Dockerfile
+    container_name: reviewservice
+    ports:
+      - "5008:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Database=${REVIEW_SERVICE_DB};
+      Jwt__Key: ${JWT_KEY}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Username: ${RABBITMQ_DEFAULT_USER}
+      RabbitMq__Password: ${RABBITMQ_DEFAULT_PASS}
+      ServiceUrls__OrderService: http://orderservice:8080
+      ServiceUrls__UserService: http://userservice:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      orderservice:
+        condition: service_started
+      userservice:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/health/ready || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - kosherclouds-network
+
+  notificationservice:
+    build:
+      context: .
+      dockerfile: ./backend/src/NotificationService/KosherClouds.NotificationService/Dockerfile
+    container_name: notificationservice
+    ports:
+      - "5009:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      EmailSettings__SmtpServer: mailpit
+      EmailSettings__SmtpPort: 1025
+      EmailSettings__SenderName: KosherClouds
+      EmailSettings__SenderEmail: noreply@kosherclouds.com
+      EmailSettings__Username: ""
+      EmailSettings__Password: ""
+      EmailSettings__UseSsl: "false"
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Username: ${RABBITMQ_DEFAULT_USER}
+      RabbitMq__Password: ${RABBITMQ_DEFAULT_PASS}
+      ServiceUrls__UserService: http://userservice:8080
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
     restart: unless-stopped
     networks:
       - kosherclouds-network

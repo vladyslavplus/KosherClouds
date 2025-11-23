@@ -24,7 +24,7 @@ namespace KosherClouds.OrderService.Data.Seed
             {
                 Id = SharedSeedData.Order1Id,
                 UserId = SharedSeedData.UserId,
-                Status = "Paid",
+                Status = OrderStatus.Paid,
                 TotalAmount = SharedSeedData.ProductKugelPrice * 2 + SharedSeedData.ProductFalafelSetPrice,
                 Notes = "Please deliver to the front desk",
                 CreatedAt = createdAt,
@@ -61,7 +61,7 @@ namespace KosherClouds.OrderService.Data.Seed
             {
                 Id = SharedSeedData.Order2Id,
                 UserId = SharedSeedData.ManagerId,
-                Status = "Paid",
+                Status = OrderStatus.Paid,
                 TotalAmount = SharedSeedData.ProductHookahTropicalPrice * 2,
                 Notes = null,
                 CreatedAt = createdAt.AddDays(2),
@@ -87,7 +87,7 @@ namespace KosherClouds.OrderService.Data.Seed
             {
                 Id = SharedSeedData.Order3Id,
                 UserId = SharedSeedData.UserId,
-                Status = "Paid",
+                Status = OrderStatus.Paid,
                 TotalAmount = SharedSeedData.ProductFalafelSetPrice + SharedSeedData.ProductHookahTropicalPrice,
                 Notes = "Thank you!",
                 CreatedAt = DateTimeOffset.UtcNow.AddDays(-5),

@@ -84,6 +84,7 @@ namespace KosherClouds.UserService.Services
                 {
                     Id = u.Id,
                     UserName = u.UserName,
+                    Email = u.Email,
                     FirstName = u.FirstName,
                     LastName = u.LastName
                 })

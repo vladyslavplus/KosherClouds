@@ -30,7 +30,6 @@ namespace KosherClouds.OrderService.Controllers
                 return Unauthorized();
 
             var isAdminOrManager = User.IsAdminOrManager();
-
             if (!isAdminOrManager)
             {
                 parameters.UserId = userId;
@@ -84,15 +83,18 @@ namespace KosherClouds.OrderService.Controllers
         [HttpPut("{id:guid}/confirm")]
         public async Task<ActionResult<OrderResponseDto>> ConfirmDraft(
             Guid id,
-            [FromBody] OrderConfirmDto? request,
+            [FromBody] OrderConfirmDto request,
             CancellationToken cancellationToken)
         {
             var userId = User.GetUserId();
             if (userId == null)
                 return Unauthorized();
 
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var confirmed = await _orderService.ConfirmOrderAsync(
-                id, userId.Value, request?.Notes, cancellationToken);
+                id, userId.Value, request, cancellationToken);
 
             return Ok(confirmed);
         }
@@ -104,6 +106,9 @@ namespace KosherClouds.OrderService.Controllers
             [FromBody] OrderUpdateDto request,
             CancellationToken cancellationToken)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             await _orderService.UpdateOrderAsync(id, request, cancellationToken);
             return NoContent();
         }

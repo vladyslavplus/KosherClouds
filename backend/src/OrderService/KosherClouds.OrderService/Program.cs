@@ -9,6 +9,7 @@ using KosherClouds.ServiceDefaults.Handlers;
 using KosherClouds.ServiceDefaults.Helpers;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,7 +66,11 @@ builder.Services.AddSingleton<ISortHelperFactory, SortHelperFactory>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IOrderItemService, OrderItemService>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerWithJwt("KosherClouds OrderService API");
 

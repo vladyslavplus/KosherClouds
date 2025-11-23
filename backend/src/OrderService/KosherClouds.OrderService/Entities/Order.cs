@@ -12,8 +12,7 @@ namespace KosherClouds.OrderService.Entities
         public Guid UserId { get; set; }
 
         [Required]
-        [MaxLength(50)]
-        public string Status { get; set; } = "Pending"; // Pending, Paid, Canceled, etc.
+        public OrderStatus Status { get; set; } = OrderStatus.Draft;
 
         [Required]
         [Precision(18, 2)]
@@ -21,6 +20,9 @@ namespace KosherClouds.OrderService.Entities
 
         [MaxLength(500)]
         public string? Notes { get; set; }
+
+        [Required]
+        public PaymentType PaymentType { get; set; } = PaymentType.OnPickup;
 
         [Required]
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
