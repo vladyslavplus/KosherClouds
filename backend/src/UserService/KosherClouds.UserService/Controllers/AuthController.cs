@@ -34,5 +34,36 @@ namespace KosherClouds.UserService.Controllers
 
             return Ok(tokens);
         }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var (success, error) = await _authService.ForgotPasswordAsync(request);
+
+            if (!success)
+                return BadRequest(new { message = error });
+
+            return Ok(new
+            {
+                message = "If the email exists, a password reset link has been sent."
+            });
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var (success, error) = await _authService.ResetPasswordAsync(request);
+
+            if (!success)
+                return BadRequest(new { message = error });
+
+            return Ok(new { message = "Password has been reset successfully." });
+        }
     }
 }

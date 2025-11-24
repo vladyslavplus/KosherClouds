@@ -26,6 +26,7 @@ builder.Services.AddMassTransit(x =>
     x.AddConsumer<OrderCreatedConsumer>();
     x.AddConsumer<UserRegisteredConsumer>();
     x.AddConsumer<BookingCreatedConsumer>();
+    x.AddConsumer<PasswordResetRequestedConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
     {
@@ -48,6 +49,11 @@ builder.Services.AddMassTransit(x =>
         cfg.ReceiveEndpoint("notification-booking-created-queue", e =>
         {
             e.ConfigureConsumer<BookingCreatedConsumer>(context);
+        });
+
+        cfg.ReceiveEndpoint("notification-password-reset-queue", e =>
+        {
+            e.ConfigureConsumer<PasswordResetRequestedConsumer>(context);
         });
 
         cfg.ConfigureEndpoints(context);

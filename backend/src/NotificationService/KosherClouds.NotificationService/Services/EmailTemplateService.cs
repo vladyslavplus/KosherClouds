@@ -95,6 +95,37 @@ namespace KosherClouds.NotificationService.Services
             return GenerateEmailTemplate("Booking Confirmation", contentBuilder.ToString());
         }
 
+        public string GeneratePasswordResetEmail(
+            string userName,
+            string resetToken,
+            string email,
+            DateTime expiresAt)
+        {
+            // TODO: implement when frontend
+            var resetUrl = $"http://localhost:3000/reset-password?token={resetToken}&email={Uri.EscapeDataString(email)}";
+            var expiresIn = (expiresAt - DateTime.UtcNow).TotalMinutes;
+
+            var contentBuilder = new StringBuilder();
+            contentBuilder.AppendLine($"            <p>Dear {userName},</p>");
+            contentBuilder.AppendLine("            <p>We received a request to reset your password for your Kosher Clouds account.</p>");
+            contentBuilder.AppendLine("            <div class='order-details'>");
+            contentBuilder.AppendLine("                <p><strong>Password Reset Request</strong></p>");
+            contentBuilder.AppendLine($"                <p>This link will expire in <strong>{expiresIn:F0} minutes</strong>.</p>");
+            contentBuilder.AppendLine("                <div style='text-align: center; margin: 20px 0;'>");
+            contentBuilder.AppendLine($"                    <a href='{resetUrl}' style='background-color: #4CAF50; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;'>Reset Password</a>");
+            contentBuilder.AppendLine("                </div>");
+            contentBuilder.AppendLine("                <p style='color: #777; font-size: 14px;'>If the button doesn't work, copy and paste this link into your browser:</p>");
+            contentBuilder.AppendLine($"                <p style='word-break: break-all; font-size: 12px; color: #555;'>{resetUrl}</p>");
+            contentBuilder.AppendLine("            </div>");
+            contentBuilder.AppendLine("            <p><strong>⚠️ Security Notice:</strong></p>");
+            contentBuilder.AppendLine("            <ul style='color: #555;'>");
+            contentBuilder.AppendLine("                <li>If you didn't request this password reset, please ignore this email.</li>");
+            contentBuilder.AppendLine("                <li>Your password will remain unchanged.</li>");
+            contentBuilder.AppendLine("                <li>Never share your password with anyone.</li>");
+            contentBuilder.AppendLine("            </ul>");
+
+            return GenerateEmailTemplate("Password Reset Request", contentBuilder.ToString());
+        }
         private static string GenerateEmailTemplate(string title, string content)
         {
             var sb = new StringBuilder();

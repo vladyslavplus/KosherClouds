@@ -17,5 +17,11 @@ namespace KosherClouds.NotificationService.Services.Interfaces
             string userName,
             Guid bookingId,
             DateTime bookingDateTime);
+
+        string GeneratePasswordResetEmail(
+            string userName,
+            string resetToken,
+            string email,
+            DateTime expiresAt);
     }
 }

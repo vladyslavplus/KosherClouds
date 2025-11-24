@@ -7,5 +7,7 @@ namespace KosherClouds.UserService.Services.Interfaces
     {
         Task<(bool Success, string? Error, TokenResponse? Tokens)> RegisterAsync(RegisterRequest request);
         Task<(bool Success, string? Error, TokenResponse? Tokens)> LoginAsync(LoginRequest request);
+        Task<(bool Success, string? Error)> ForgotPasswordAsync(ForgotPasswordRequest request);
+        Task<(bool Success, string? Error)> ResetPasswordAsync(ResetPasswordRequest request);
     }
 }
