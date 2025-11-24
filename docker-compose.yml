@@ -83,11 +83,6 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost/health/ready || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
     restart: unless-stopped
     networks:
       - kosherclouds-network
@@ -113,11 +108,6 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost/health/ready || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
     restart: unless-stopped
     networks:
       - kosherclouds-network
@@ -169,11 +159,6 @@ services:
         condition: service_started
       productservice:
         condition: service_started
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost/health/ready || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
     restart: unless-stopped
     networks:
       - kosherclouds-network
@@ -200,11 +185,6 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost/health/ready || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
     restart: unless-stopped
     networks:
       - kosherclouds-network
@@ -230,11 +210,6 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost/health/ready || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
     restart: unless-stopped
     networks:
       - kosherclouds-network
@@ -266,11 +241,6 @@ services:
         condition: service_started
       userservice:
         condition: service_started
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost/health/ready || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
     restart: unless-stopped
     networks:
       - kosherclouds-network
@@ -300,6 +270,31 @@ services:
         condition: service_healthy
       mailpit:
         condition: service_started
+    restart: unless-stopped
+    networks:
+      - kosherclouds-network
+
+  apigateway:
+    build:
+      context: .
+      dockerfile: ./backend/src/Gateway/KosherClouds.ApiGateway/Dockerfile
+    container_name: apigateway
+    ports:
+      - "5000:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Jwt__Key: ${JWT_KEY}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+    depends_on:
+      - userservice
+      - productservice
+      - cartservice
+      - orderservice
+      - paymentservice
+      - bookingservice
+      - reviewservice
+      - notificationservice
     restart: unless-stopped
     networks:
       - kosherclouds-network
