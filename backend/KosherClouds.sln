@@ -64,6 +64,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KosherClouds.UserService.Un
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KosherClouds.ReviewService.UnitTests", "tests\Unit\KosherClouds.ReviewService.UnitTests\KosherClouds.ReviewService.UnitTests.csproj", "{32375EDB-E0B3-47F1-A4B7-7E47384633A0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KosherClouds.OrderService.UnitTests", "tests\Unit\KosherClouds.OrderService.UnitTests\KosherClouds.OrderService.UnitTests.csproj", "{C4BF96B3-88A3-4BF6-B938-55401118612B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -130,6 +132,10 @@ Global
 		{32375EDB-E0B3-47F1-A4B7-7E47384633A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{32375EDB-E0B3-47F1-A4B7-7E47384633A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{32375EDB-E0B3-47F1-A4B7-7E47384633A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4BF96B3-88A3-4BF6-B938-55401118612B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4BF96B3-88A3-4BF6-B938-55401118612B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4BF96B3-88A3-4BF6-B938-55401118612B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4BF96B3-88A3-4BF6-B938-55401118612B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -160,6 +166,7 @@ Global
 		{42916466-A30C-467A-A727-E9610F5C682D} = {6E80CE4F-0E08-455B-8845-FD6046FE55E9}
 		{4ACD0972-3E42-496D-8CC0-CD87027BAC66} = {6E80CE4F-0E08-455B-8845-FD6046FE55E9}
 		{32375EDB-E0B3-47F1-A4B7-7E47384633A0} = {6E80CE4F-0E08-455B-8845-FD6046FE55E9}
+		{C4BF96B3-88A3-4BF6-B938-55401118612B} = {6E80CE4F-0E08-455B-8845-FD6046FE55E9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1FAEA2CC-23BF-406F-8106-AF483733C4BB}
