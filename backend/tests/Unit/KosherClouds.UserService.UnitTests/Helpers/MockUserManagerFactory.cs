@@ -10,26 +10,30 @@ namespace KosherClouds.UserService.UnitTests.Helpers
     {
         public static Mock<UserManager<ApplicationUser>> Create()
         {
-            var userStoreMock = new Mock<IUserStore<ApplicationUser>>();
-            var optionsMock = new Mock<IOptions<IdentityOptions>>();
-            var hasherMock = new Mock<IPasswordHasher<ApplicationUser>>();
-            var validatorsMock = new List<IUserValidator<ApplicationUser>>();
-            var passwordValidatorsMock = new List<IPasswordValidator<ApplicationUser>>();
-            var lookupNormalizerMock = new Mock<ILookupNormalizer>();
-            var errorsMock = new Mock<IdentityErrorDescriber>();
-            var servicesMock = new Mock<IServiceProvider>();
-            var loggerMock = new Mock<ILogger<UserManager<ApplicationUser>>>();
+            var store = new Mock<IUserStore<ApplicationUser>>();
+            var options = new Mock<IOptions<IdentityOptions>>();
+            var passwordHasher = new Mock<IPasswordHasher<ApplicationUser>>();
+            var userValidators = new List<IUserValidator<ApplicationUser>>();
+            var passwordValidators = new List<IPasswordValidator<ApplicationUser>>();
+            var keyNormalizer = new Mock<ILookupNormalizer>();
+            var errors = new Mock<IdentityErrorDescriber>();
+            var services = new Mock<IServiceProvider>();
+            var logger = new Mock<ILogger<UserManager<ApplicationUser>>>();
+
+            options.Setup(o => o.Value).Returns(new IdentityOptions());
 
             var userManager = new Mock<UserManager<ApplicationUser>>(
-                userStoreMock.Object,
-                optionsMock.Object,
-                hasherMock.Object,
-                validatorsMock,
-                passwordValidatorsMock,
-                lookupNormalizerMock.Object,
-                errorsMock.Object,
-                servicesMock.Object,
-                loggerMock.Object);
+                store.Object,
+                options.Object,
+                passwordHasher.Object,
+                userValidators,
+                passwordValidators,
+                keyNormalizer.Object,
+                errors.Object,
+                services.Object,
+                logger.Object);
+
+            userManager.SetupUsers(new List<ApplicationUser>());
 
             return userManager;
         }

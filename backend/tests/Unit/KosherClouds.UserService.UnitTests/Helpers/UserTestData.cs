@@ -85,7 +85,8 @@ namespace KosherClouds.UserService.UnitTests.Helpers
             {
                 UserName = _faker.Internet.UserName(),
                 Email = _faker.Internet.Email(),
-                Password = "Test@1234"
+                Password = "Test@1234",
+                PhoneNumber = $"+380{_faker.Random.Number(500000000, 999999999)}"
             };
         }
 

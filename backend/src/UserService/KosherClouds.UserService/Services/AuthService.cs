@@ -6,6 +6,7 @@ using KosherClouds.UserService.Services.Interfaces;
 using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 using System.Text;
 
 namespace KosherClouds.UserService.Services
@@ -38,10 +39,23 @@ namespace KosherClouds.UserService.Services
             if (existingUser != null)
                 return (false, "Email already registered", null);
 
+            var existingPhone = await _userManager.Users
+                .FirstOrDefaultAsync(u => u.PhoneNumber == request.PhoneNumber);
+            if (existingPhone != null)
+                return (false, "Phone number already registered", null);
+
+            var nameParts = request.UserName.Trim().Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+            var firstName = nameParts.Length > 0 ? nameParts[0] : null;
+            var lastName = nameParts.Length > 1 ? nameParts[1] : null;
+
             var user = new ApplicationUser
             {
                 UserName = request.UserName,
-                Email = request.Email
+                Email = request.Email,
+                PhoneNumber = request.PhoneNumber,
+                PhoneNumberConfirmed = false,
+                FirstName = firstName,
+                LastName = lastName
             };
 
             var result = await _userManager.CreateAsync(user, request.Password);
@@ -55,6 +69,7 @@ namespace KosherClouds.UserService.Services
                 UserId = user.Id,
                 Email = user.Email!,
                 UserName = user.UserName!,
+                PhoneNumber = user.PhoneNumber,
                 CreatedAt = user.CreatedAt
             });
 

@@ -67,6 +67,9 @@ namespace KosherClouds.UserService.UnitTests.Services
                 .Setup(x => x.FindByEmailAsync(registerRequest.Email))
                 .ReturnsAsync((ApplicationUser?)null);
 
+            // Setup empty Users list (no existing phone numbers)
+            _userManagerMock.SetupUsers(new List<ApplicationUser>());
+
             _userManagerMock
                 .Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), registerRequest.Password))
                 .ReturnsAsync(IdentityResult.Success);
@@ -128,6 +131,9 @@ namespace KosherClouds.UserService.UnitTests.Services
                 .Setup(x => x.FindByEmailAsync(registerRequest.Email))
                 .ReturnsAsync((ApplicationUser?)null);
 
+            // Setup empty Users list
+            _userManagerMock.SetupUsers(new List<ApplicationUser>());
+
             _userManagerMock
                 .Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), registerRequest.Password))
                 .ReturnsAsync(IdentityResult.Failed(identityErrors));
@@ -140,6 +146,108 @@ namespace KosherClouds.UserService.UnitTests.Services
             error.Should().Contain("Password too weak");
             error.Should().Contain("Username already taken");
             tokens.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task RegisterAsync_WithExistingPhoneNumber_ReturnsFailure()
+        {
+            // Arrange
+            var registerRequest = UserTestData.CreateValidRegisterRequest();
+            var existingUser = UserTestData.CreateValidUser();
+            existingUser.PhoneNumber = registerRequest.PhoneNumber;
+
+            _userManagerMock
+                .Setup(x => x.FindByEmailAsync(registerRequest.Email))
+                .ReturnsAsync((ApplicationUser?)null);
+
+            // Setup Users list with existing PhoneNumber
+            _userManagerMock.SetupUsers(new List<ApplicationUser> { existingUser });
+
+            // Act
+            var (success, error, tokens) = await _authService.RegisterAsync(registerRequest);
+
+            // Assert
+            success.Should().BeFalse();
+            error.Should().Be("Phone number already registered");
+            tokens.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task RegisterAsync_SplitsUserNameIntoFirstAndLastName()
+        {
+            // Arrange
+            var registerRequest = UserTestData.CreateValidRegisterRequest();
+            registerRequest.UserName = "John Doe";
+            var mockTokens = new DTOs.Token.TokenResponse("access-token", "refresh-token");
+
+            ApplicationUser? capturedUser = null;
+
+            _userManagerMock
+                .Setup(x => x.FindByEmailAsync(registerRequest.Email))
+                .ReturnsAsync((ApplicationUser?)null);
+
+            _userManagerMock.SetupUsers(new List<ApplicationUser>());
+
+            _userManagerMock
+                .Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), registerRequest.Password))
+                .Callback<ApplicationUser, string>((user, pass) => capturedUser = user)
+                .ReturnsAsync(IdentityResult.Success);
+
+            _userManagerMock
+                .Setup(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), "User"))
+                .ReturnsAsync(IdentityResult.Success);
+
+            _tokenServiceMock
+                .Setup(x => x.GenerateTokensAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync(mockTokens);
+
+            // Act
+            await _authService.RegisterAsync(registerRequest);
+
+            // Assert
+            capturedUser.Should().NotBeNull();
+            capturedUser!.FirstName.Should().Be("John");
+            capturedUser.LastName.Should().Be("Doe");
+            capturedUser.PhoneNumber.Should().Be(registerRequest.PhoneNumber);
+            capturedUser.PhoneNumberConfirmed.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task RegisterAsync_WithSingleNameUserName_SetsOnlyFirstName()
+        {
+            // Arrange
+            var registerRequest = UserTestData.CreateValidRegisterRequest();
+            registerRequest.UserName = "John";
+            var mockTokens = new DTOs.Token.TokenResponse("access-token", "refresh-token");
+
+            ApplicationUser? capturedUser = null;
+
+            _userManagerMock
+                .Setup(x => x.FindByEmailAsync(registerRequest.Email))
+                .ReturnsAsync((ApplicationUser?)null);
+
+            _userManagerMock.SetupUsers(new List<ApplicationUser>());
+
+            _userManagerMock
+                .Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), registerRequest.Password))
+                .Callback<ApplicationUser, string>((user, pass) => capturedUser = user)
+                .ReturnsAsync(IdentityResult.Success);
+
+            _userManagerMock
+                .Setup(x => x.AddToRoleAsync(It.IsAny<ApplicationUser>(), "User"))
+                .ReturnsAsync(IdentityResult.Success);
+
+            _tokenServiceMock
+                .Setup(x => x.GenerateTokensAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync(mockTokens);
+
+            // Act
+            await _authService.RegisterAsync(registerRequest);
+
+            // Assert
+            capturedUser.Should().NotBeNull();
+            capturedUser!.FirstName.Should().Be("John");
+            capturedUser.LastName.Should().BeNull();
         }
 
         #endregion
