@@ -11,6 +11,8 @@ namespace KosherClouds.UserService.Services.Interfaces
         Task<UserProfileDto?> GetUserProfileAsync(Guid id, CancellationToken cancellationToken = default);
         Task<ApplicationUser?> GetUserByIdAsync(Guid id, CancellationToken cancellationToken = default);
         Task<UserPublicDto?> GetUserPublicInfoAsync(Guid id, CancellationToken cancellationToken = default);
+        Task<(bool Success, string? Error)> UpdateUserAsync(Guid userId, UpdateUserRequest request, CancellationToken cancellationToken = default);
+        Task<(bool Success, string? Error)> ChangePasswordAsync(Guid userId, ChangePasswordRequest request, CancellationToken cancellationToken = default);
         Task<bool> DeleteUserAsync(Guid id, CancellationToken cancellationToken = default);
     }
 }

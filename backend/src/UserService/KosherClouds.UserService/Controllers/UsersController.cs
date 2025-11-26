@@ -1,4 +1,5 @@
 ﻿using KosherClouds.ServiceDefaults.Extensions;
+using KosherClouds.UserService.DTOs.User;
 using KosherClouds.UserService.Parameters;
 using KosherClouds.UserService.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +9,7 @@ namespace KosherClouds.UserService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -19,6 +20,7 @@ namespace KosherClouds.UserService.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetUsers([FromQuery] UserParameters parameters, CancellationToken cancellationToken)
         {
             var users = await _userService.GetUsersAsync(parameters, cancellationToken);
@@ -50,6 +52,7 @@ namespace KosherClouds.UserService.Controllers
         }
 
         [HttpGet("{id:guid}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetUserById(Guid id, CancellationToken cancellationToken)
         {
             var user = await _userService.GetUserByIdAsync(id, cancellationToken);
@@ -66,7 +69,46 @@ namespace KosherClouds.UserService.Controllers
             return Ok(user);
         }
 
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserRequest request, CancellationToken cancellationToken)
+        {
+            var currentUserId = User.GetUserId();
+            var isAdmin = User.IsAdmin();
+
+            if (currentUserId != id && !isAdmin)
+            {
+                return Forbid();
+            }
+
+            var (success, error) = await _userService.UpdateUserAsync(id, request, cancellationToken);
+
+            if (!success)
+                return BadRequest(new { message = error });
+
+            var updatedProfile = await _userService.GetUserProfileAsync(id, cancellationToken);
+            return Ok(updatedProfile);
+        }
+
+        [HttpPost("{id:guid}/change-password")]
+        public async Task<IActionResult> ChangePassword(Guid id, [FromBody] ChangePasswordRequest request, CancellationToken cancellationToken)
+        {
+            var currentUserId = User.GetUserId();
+
+            if (currentUserId != id)
+            {
+                return Forbid();
+            }
+
+            var (success, error) = await _userService.ChangePasswordAsync(id, request, cancellationToken);
+
+            if (!success)
+                return BadRequest(new { message = error });
+
+            return Ok(new { message = "Password changed successfully" });
+        }
+
         [HttpDelete("{id:guid}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUser(Guid id, CancellationToken cancellationToken)
         {
             var success = await _userService.DeleteUserAsync(id, cancellationToken);
