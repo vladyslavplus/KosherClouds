@@ -1,0 +1,12 @@
+{
+  "nav": {
+    "menu": "Menu",
+    "booking": "Booking",
+    "reviews": "Reviews"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout"
+  }
+}

@@ -68,6 +68,29 @@ namespace KosherClouds.UserService.Services
                 cancellationToken);
         }
 
+        public async Task<UserProfileDto?> GetUserProfileAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            var user = await _userManager.Users
+                .AsNoTracking()
+                .Where(u => u.Id == id)
+                .Select(u => new UserProfileDto
+                {
+                    Id = u.Id,
+                    UserName = u.UserName,
+                    Email = u.Email,
+                    PhoneNumber = u.PhoneNumber,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    EmailConfirmed = u.EmailConfirmed,
+                    PhoneNumberConfirmed = u.PhoneNumberConfirmed,
+                    CreatedAt = u.CreatedAt,
+                    UpdatedAt = u.UpdatedAt
+                })
+                .FirstOrDefaultAsync(cancellationToken);
+
+            return user;
+        }
+
         public async Task<ApplicationUser?> GetUserByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {
             return await _userManager.Users

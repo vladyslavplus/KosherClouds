@@ -1,4 +1,5 @@
-﻿using KosherClouds.UserService.Parameters;
+﻿using KosherClouds.ServiceDefaults.Extensions;
+using KosherClouds.UserService.Parameters;
 using KosherClouds.UserService.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -31,6 +32,21 @@ namespace KosherClouds.UserService.Controllers
                 users.HasPrevious
             });
             return Ok(users);
+        }
+
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<IActionResult> GetCurrentUser(CancellationToken cancellationToken)
+        {
+            var userId = User.GetUserId();
+            if (userId == null)
+                return Unauthorized();
+
+            var user = await _userService.GetUserProfileAsync(userId.Value, cancellationToken);
+            if (user == null)
+                return NotFound();
+
+            return Ok(user);
         }
 
         [HttpGet("{id:guid}")]

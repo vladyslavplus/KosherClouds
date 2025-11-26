@@ -3,12 +3,12 @@ import { cn } from '@/lib/utils/cn';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
-  variant?: 'primary' | 'secondary' | 'outline' | 'status-green' | 'status-orange' | 'status-blue' | 'status-red';
+  variant?: 'primary' | 'secondary' | 'outline' | 'auth' | 'status-green' | 'status-orange' | 'status-blue' | 'status-red';
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
   isLoading?: boolean;
   icon?: ReactNode;
-  rounded?: 'full' | 'lg' | 'md' | 'sm' | 'none';
+  rounded?: 'full' | 'lg' | 'md' | 'sm' | 'none' | '20';
   interactive?: boolean;
 }
 
@@ -31,6 +31,7 @@ export function Button({
     primary: 'bg-[#1A1F3A] text-white hover:bg-[#252b47] active:scale-[0.98] font-bold',
     secondary: 'bg-[#8B6914] text-white hover:bg-[#9d7518] active:scale-[0.98] font-bold',
     outline: 'bg-transparent border-2 border-[#000000] text-[#000000] hover:bg-gray-50 active:scale-[0.98] font-medium',
+    auth: 'bg-[#0E1071] text-white hover:bg-[#0c0d5f] active:scale-[0.98] font-normal',
     'status-green': 'bg-[#15803D] text-white border border-[#000000] font-medium',
     'status-orange': 'bg-[#D97706] text-white border border-[#000000] font-medium',
     'status-blue': 'bg-[#3E4373] text-white border border-[#000000] font-medium',
@@ -55,6 +56,7 @@ export function Button({
     md: 'rounded-lg',
     sm: 'rounded-md',
     none: 'rounded-none',
+    '20': 'rounded-[20px]',
   };
 
   return (
