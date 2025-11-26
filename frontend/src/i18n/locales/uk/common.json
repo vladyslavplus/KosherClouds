@@ -39,5 +39,31 @@
     "phone": "+380 00 00 00 000",
     "email": "kocher.clouds@gmail.com",
     "privacy": "Політика конфіденційності"
+  },
+  "profile": {
+    "title": "Профіль",
+    "orders": "Замовлення",
+    "bookings": "Бронювання",
+    "adminPanel": "Адмін панель",
+    "name": "Ім'я",
+    "password": "Пароль",
+    "email": "Email",
+    "phone": "Телефон",
+    "saveButton": "Зберегти",
+    "changePasswordButton": "Змінити пароль",
+    "changePasswordTitle": "Зміна паролю",
+    "currentPassword": "Поточний пароль",
+    "newPassword": "Новий пароль",
+    "savePasswordButton": "Зберегти пароль",
+    "cancelButton": "Скасувати",
+    "editButton": "Змінити",
+    "loading": "Завантаження...",
+    "profileUpdated": "Профіль оновлено успішно",
+    "passwordChanged": "Пароль змінено успішно",
+    "updateFailed": "Не вдалося оновити профіль",
+    "passwordChangeFailed": "Не вдалося змінити пароль",
+    "ordersPlaceholder": "Список ваших замовлень буде тут...",
+    "bookingsPlaceholder": "Список ваших бронювань буде тут...",
+    "adminPlaceholder": "Адміністративні функції будуть тут..."
   }
 }

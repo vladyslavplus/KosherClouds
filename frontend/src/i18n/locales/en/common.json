@@ -39,5 +39,31 @@
     "phone": "+380 00 00 00 000",
     "email": "kocher.clouds@gmail.com",
     "privacy": "Privacy Policy"
+  },
+  "profile": {
+    "title": "Profile",
+    "orders": "Orders",
+    "bookings": "Bookings",
+    "adminPanel": "Admin Panel",
+    "name": "Name",
+    "password": "Password",
+    "email": "Email",
+    "phone": "Phone",
+    "saveButton": "Save",
+    "changePasswordButton": "Change Password",
+    "changePasswordTitle": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "savePasswordButton": "Save Password",
+    "cancelButton": "Cancel",
+    "editButton": "Edit",
+    "loading": "Loading...",
+    "profileUpdated": "Profile updated successfully",
+    "passwordChanged": "Password changed successfully",
+    "updateFailed": "Failed to update profile",
+    "passwordChangeFailed": "Failed to change password",
+    "ordersPlaceholder": "Your orders will be here...",
+    "bookingsPlaceholder": "Your bookings will be here...",
+    "adminPlaceholder": "Administrative functions will be here..."
   }
 }
