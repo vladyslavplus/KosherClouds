@@ -21,7 +21,17 @@
     "phonePlaceholder": "Введіть ваш номер телефону",
     "registerButton": "Зареєструватись",
     "alreadyHaveAccount": "Вже маєте акаунт?",
-    "signIn": "Увійти"
+    "signIn": "Увійти",
+    "forgotPasswordTitle": "Відновлення паролю",
+    "sendButton": "Надіслати",
+    "backToLogin": "Повернутись на вхід",
+    "resetPasswordTitle": "Встановлення паролю",
+    "newPassword": "Новий пароль",
+    "newPasswordPlaceholder": "Введіть новий пароль",
+    "confirmPassword": "Підтвердження паролю",
+    "confirmPasswordPlaceholder": "Підтвердіть ваш пароль",
+    "savePasswordButton": "Зберегти пароль",
+    "rememberPassword": "Пам'ятаєте пароль?"
   },
   "footer": {
     "city": "м. Чернівці",

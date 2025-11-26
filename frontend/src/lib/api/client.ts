@@ -1,5 +1,5 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios';
-import { useAuthStore } from '@/lib/stores/authStore';
+import { useAuthStore } from '../stores/authStore';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -29,19 +29,27 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 && 
+      !originalRequest._retry &&
+      !originalRequest.url?.includes('/tokens/refresh')
+    ) {
+      if (originalRequest.url?.includes('/auth/login') || originalRequest.url?.includes('/auth/register')) {
+        return Promise.reject(error);
+      }
+
       originalRequest._retry = true;
 
-      const { refreshToken, setAuth, clearAuth } = useAuthStore.getState();
+      const { accessToken, clearAuth } = useAuthStore.getState();
 
-      if (refreshToken) {
+      if (accessToken) {
         try {
           const response = await axios.post(
             `${API_BASE_URL}/tokens/refresh`,
             {},
             {
               headers: {
-                Authorization: `Bearer ${refreshToken}`,
+                Authorization: `Bearer ${accessToken}`,
               },
             }
           );
@@ -50,19 +58,23 @@ apiClient.interceptors.response.use(
           
           const { user } = useAuthStore.getState();
           if (user) {
-            setAuth(newAccessToken, newRefreshToken, user);
+            useAuthStore.getState().setAuth(newAccessToken, newRefreshToken, user);
           }
 
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return apiClient(originalRequest);
         } catch (refreshError) {
           clearAuth();
-          window.location.href = '/login';
+          if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+            window.location.href = '/login';
+          }
           return Promise.reject(refreshError);
         }
       } else {
         clearAuth();
-        window.location.href = '/login';
+        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+          window.location.href = '/login';
+        }
       }
     }
 

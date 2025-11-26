@@ -21,7 +21,17 @@
     "phonePlaceholder": "Enter your phone number",
     "registerButton": "Sign Up",
     "alreadyHaveAccount": "Already have an account?",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "forgotPasswordTitle": "Forgot Password",
+    "sendButton": "Send",
+    "backToLogin": "Back to login",
+    "resetPasswordTitle": "Reset Password",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "Enter new password",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Confirm your password",
+    "savePasswordButton": "Save Password",
+    "rememberPassword": "Remember your password?"
   },
   "footer": {
     "city": "Chernivtsi",
