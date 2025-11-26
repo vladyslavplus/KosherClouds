@@ -5,12 +5,14 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   rounded?: 'full' | 'lg' | 'md' | 'sm' | 'none';
+  bordered?: boolean;
 }
 
 export function Input({
   label,
   error,
   rounded = 'full',
+  bordered = false,
   className,
   id,
   ...props
@@ -40,13 +42,14 @@ export function Input({
         id={inputId}
         className={cn(
           'w-full px-6 py-3',
-          'border-2 border-[#000000] bg-white',
-          'font-heading font-medium text-lg text-[#B4B6D4] placeholder:text-[#B4B6D4]',
+          'bg-white',
+          'font-heading font-medium text-lg text-[#000000] placeholder:text-[#B4B6D4]',
           'transition-all duration-200',
-          'focus:outline-none focus:border-[#000000]',
+          'focus:outline-none',
           'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50',
+          bordered && 'border-2 border-[#000000] focus:border-[#000000]',
           roundedStyles[rounded],
-          error && 'border-red-500',
+          error && 'border-2 border-red-500',
           className
         )}
         {...props}

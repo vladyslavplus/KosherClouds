@@ -58,22 +58,26 @@ export function Navbar() {
 
             {!isAuthenticated ? (
               <>
-                <Button 
-                  variant="auth" 
-                  size="sm" 
-                  rounded="20" 
-                  className="min-w-[100px] lg:min-w-[110px] xl:min-w-[120px] text-xl! py-2! px-6!"
-                >
-                  {t('auth.login')}
-                </Button>
-                <Button 
-                  variant="auth" 
-                  size="sm" 
-                  rounded="20" 
-                  className="min-w-[150px] lg:min-w-40 xl:min-w-[170px] text-xl! py-2! px-6!"
-                >
-                  {t('auth.register')}
-                </Button>
+                <Link to="/login">
+                  <Button 
+                    variant="auth" 
+                    size="sm" 
+                    rounded="20" 
+                    className="min-w-[100px] lg:min-w-[110px] xl:min-w-[120px] text-xl! py-2! px-6!"
+                  >
+                    {t('auth.login')}
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button 
+                    variant="auth" 
+                    size="sm" 
+                    rounded="20" 
+                    className="min-w-[150px] lg:min-w-40 xl:min-w-[170px] text-xl! py-2! px-6!"
+                  >
+                    {t('auth.register')}
+                  </Button>
+                </Link>
               </>
             ) : (
               <>

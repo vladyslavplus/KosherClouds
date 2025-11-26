@@ -7,6 +7,27 @@
   "auth": {
     "login": "Вхід",
     "register": "Реєстрація",
-    "logout": "Вихід"
+    "logout": "Вихід",
+    "email": "Електронна пошта",
+    "password": "Пароль",
+    "rememberMe": "Запам'ятати мене",
+    "forgotPassword": "Не пам'ятаю пароль",
+    "loginButton": "Увійти",
+    "emailPlaceholder": "Введіть вашу пошту",
+    "passwordPlaceholder": "Введіть ваш пароль",
+    "name": "Ім'я",
+    "namePlaceholder": "Введіть ваше ім'я",
+    "phone": "Телефон",
+    "phonePlaceholder": "Введіть ваш номер телефону",
+    "registerButton": "Зареєструватись",
+    "alreadyHaveAccount": "Вже маєте акаунт?",
+    "signIn": "Увійти"
+  },
+  "footer": {
+    "city": "м. Чернівці",
+    "street": "вул. Головна, 1",
+    "phone": "+380 00 00 00 000",
+    "email": "kocher.clouds@gmail.com",
+    "privacy": "Політика конфіденційності"
   }
 }

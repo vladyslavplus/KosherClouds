@@ -7,6 +7,27 @@
   "auth": {
     "login": "Login",
     "register": "Register",
-    "logout": "Logout"
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "loginButton": "Sign In",
+    "emailPlaceholder": "Enter your email",
+    "passwordPlaceholder": "Enter your password",
+    "name": "Name",
+    "namePlaceholder": "Enter your name",
+    "phone": "Phone",
+    "phonePlaceholder": "Enter your phone number",
+    "registerButton": "Sign Up",
+    "alreadyHaveAccount": "Already have an account?",
+    "signIn": "Sign in"
+  },
+  "footer": {
+    "city": "Chernivtsi",
+    "street": "Holovna St., 1",
+    "phone": "+380 00 00 00 000",
+    "email": "kocher.clouds@gmail.com",
+    "privacy": "Privacy Policy"
   }
 }
