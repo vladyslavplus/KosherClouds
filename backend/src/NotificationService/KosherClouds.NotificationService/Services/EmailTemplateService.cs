@@ -101,7 +101,6 @@ namespace KosherClouds.NotificationService.Services
             string email,
             DateTime expiresAt)
         {
-            // TODO: implement when frontend
             var resetUrl = $"http://localhost:3000/reset-password?token={resetToken}&email={Uri.EscapeDataString(email)}";
             var expiresIn = (expiresAt - DateTime.UtcNow).TotalMinutes;
 
