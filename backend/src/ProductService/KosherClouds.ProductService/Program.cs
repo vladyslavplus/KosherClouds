@@ -6,6 +6,7 @@ using KosherClouds.ServiceDefaults.Extensions;
 using KosherClouds.ServiceDefaults.Helpers;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,8 +32,15 @@ builder.Services.AddMassTransit(x =>
 builder.Services.AddScoped(typeof(ISortHelper<>), typeof(SortHelper<>));
 builder.Services.AddSingleton<ISortHelperFactory, SortHelperFactory>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddSingleton<ICloudinaryService, CloudinaryService>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.Create(System.Text.Unicode.UnicodeRanges.All);
+    });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerWithJwt("KosherClouds ProductService API");
 

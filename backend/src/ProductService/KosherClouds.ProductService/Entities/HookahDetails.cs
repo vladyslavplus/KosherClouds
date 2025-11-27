@@ -8,11 +8,14 @@ using System.Text.Json.Serialization;
 public class HookahDetails
 {
     public string TobaccoFlavor { get; set; } = string.Empty;
+    public string? TobaccoFlavorUk { get; set; } 
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public HookahStrength Strength { get; set; }
 
     public string? BowlType { get; set; }
+    public string? BowlTypeUk { get; set; }
 
     public Dictionary<string, string> AdditionalParams { get; set; } = new();
+    public Dictionary<string, string>? AdditionalParamsUk { get; set; }
 }

@@ -32,6 +32,10 @@ namespace KosherClouds.ProductService.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("AllergensUk")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Category")
                         .IsRequired()
                         .HasColumnType("text");
@@ -44,11 +48,19 @@ namespace KosherClouds.ProductService.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
+                    b.Property<string>("DescriptionUk")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
                     b.Property<decimal?>("DiscountPrice")
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)");
 
                     b.Property<string>("Ingredients")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("IngredientsUk")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -63,6 +75,10 @@ namespace KosherClouds.ProductService.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("NameUk")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
@@ -81,6 +97,9 @@ namespace KosherClouds.ProductService.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("SubCategory")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SubCategoryUk")
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -102,7 +121,13 @@ namespace KosherClouds.ProductService.Migrations
                                 .IsRequired()
                                 .HasColumnType("text");
 
+                            b1.Property<string>("AdditionalParamsUk")
+                                .HasColumnType("text");
+
                             b1.Property<string>("BowlType")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("BowlTypeUk")
                                 .HasColumnType("text");
 
                             b1.Property<string>("Strength")
@@ -110,6 +135,9 @@ namespace KosherClouds.ProductService.Migrations
                                 .HasColumnType("text");
 
                             b1.Property<string>("TobaccoFlavor")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("TobaccoFlavorUk")
                                 .HasColumnType("text");
 
                             b1.HasKey("ProductId");
