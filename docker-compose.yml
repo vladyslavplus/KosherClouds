@@ -103,6 +103,9 @@ services:
       RabbitMq__Host: rabbitmq
       RabbitMq__Username: ${RABBITMQ_DEFAULT_USER}
       RabbitMq__Password: ${RABBITMQ_DEFAULT_PASS}
+      Cloudinary__CloudName: ${CLOUDINARY_CLOUD_NAME}
+      Cloudinary__ApiKey: ${CLOUDINARY_API_KEY}
+      Cloudinary__ApiSecret: ${CLOUDINARY_API_SECRET}
     depends_on:
       postgres:
         condition: service_healthy

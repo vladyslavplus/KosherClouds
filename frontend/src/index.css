@@ -77,7 +77,8 @@ html, body {
 }
 
 body {
-  font-family: var(--font-sans);
+  font-family: 'Playfair Display', serif;
+  font-weight: 500;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

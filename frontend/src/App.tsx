@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom'
 import { Navbar, Footer, Container } from './shared/layouts'
 import { LoginPage, RegisterPage, ForgotPasswordPage, ResetPasswordPage } from './pages/auth'
 import { ProfilePage } from './pages/profile'
+import MenuPage from './pages/menu'
 
 function HomePage() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path='menu' element= {<MenuPage />} />
       </Routes>
 
       <Footer />

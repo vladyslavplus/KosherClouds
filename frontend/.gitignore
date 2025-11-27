@@ -28,8 +28,6 @@ dist-ssr/
 ########################################
 # Environment files
 ########################################
-.env
-.env.*.local
 *.local
 !.env.example
 

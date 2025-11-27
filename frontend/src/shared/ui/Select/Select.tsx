@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils/cn';
 
-const ChevronDownIcon = () => (
+const ChevronDownIcon = ({ stroke = "#374151" }: { stroke?: string }) => (
   <svg 
     width="20" 
     height="20" 
@@ -12,7 +12,7 @@ const ChevronDownIcon = () => (
   >
     <path 
       d="M5 7.5L10 12.5L15 7.5" 
-      stroke="#374151" 
+      stroke={stroke} 
       strokeWidth="2" 
       strokeLinecap="round" 
       strokeLinejoin="round"
@@ -34,6 +34,7 @@ export interface SelectProps {
   className?: string;
   rounded?: 'full' | 'lg' | 'md' | 'sm' | 'none';
   disabled?: boolean;
+  iconStroke?: string;
 }
 
 export function Select({
@@ -45,14 +46,15 @@ export function Select({
   className,
   rounded = 'full',
   disabled = false,
+  iconStroke = '#374151',
 }: SelectProps) {
   const [internalValue, setInternalValue] = useState(defaultValue || '');
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef<HTMLDivElement>(null);
-
+  
   const value = controlledValue !== undefined ? controlledValue : internalValue;
   const selectedOption = options.find(opt => opt.value === value);
-
+  
   const roundedStyles = {
     full: 'rounded-[45px]',
     lg: 'rounded-2xl',
@@ -60,7 +62,7 @@ export function Select({
     sm: 'rounded-md',
     none: 'rounded-none',
   };
-
+  
   const handleSelect = (optionValue: string) => {
     if (controlledValue === undefined) {
       setInternalValue(optionValue);
@@ -68,23 +70,23 @@ export function Select({
     onChange?.(optionValue);
     setIsOpen(false);
   };
-
+  
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
-
+    
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
-
+    
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen]);
-
+  
   return (
     <div ref={selectRef} className={cn('relative inline-block', className)}>
       <button
@@ -105,9 +107,9 @@ export function Select({
         <span className="truncate">
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <ChevronDownIcon />
+        <ChevronDownIcon stroke={iconStroke} />
       </button>
-
+      
       {isOpen && (
         <div
           className={cn(
@@ -115,8 +117,21 @@ export function Select({
             'bg-white border-2 border-[#000000]',
             'shadow-lg',
             'max-h-[300px] overflow-y-auto',
+            // Приховати scrollbar на великих екранах (md і більше)
+            'md:[&::-webkit-scrollbar]:hidden md:scrollbar-hide',
+            // Показати scrollbar тільки на маленьких екранах
+            '[&::-webkit-scrollbar]:w-2',
+            '[&::-webkit-scrollbar-track]:bg-gray-100',
+            '[&::-webkit-scrollbar-track]:rounded-full',
+            '[&::-webkit-scrollbar-thumb]:bg-gray-300',
+            '[&::-webkit-scrollbar-thumb]:rounded-full',
+            '[&::-webkit-scrollbar-thumb]:hover:bg-gray-400',
             roundedStyles[rounded]
           )}
+          style={{
+            // Для Firefox
+            scrollbarWidth: window.innerWidth >= 768 ? 'none' : 'thin',
+          }}
         >
           {options.map((option) => (
             <button
