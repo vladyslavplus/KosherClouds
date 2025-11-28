@@ -240,6 +240,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      productservice:
+        condition: service_started
       orderservice:
         condition: service_started
       userservice:
