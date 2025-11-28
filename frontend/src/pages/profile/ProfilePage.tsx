@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../lib/stores/authStore';
 import { usersApi, type UserProfile } from '../../lib/api/users';
+import { authApi } from '../../lib/api/auth';
 import { Input } from '../../shared/ui/Input';
 import { Button } from '../../shared/ui/Button';
 import { EditableField } from '@/shared/components/EditableField';
@@ -10,8 +11,8 @@ import { EditableField } from '@/shared/components/EditableField';
 export function ProfilePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user: authUser, isAuthenticated } = useAuthStore();
-  
+  const { user: authUser, isAuthenticated, logout } = useAuthStore();
+
   const [activeTab, setActiveTab] = useState('profile');
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -20,11 +21,11 @@ export function ProfilePage() {
   const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  
+
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  
+
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -68,7 +69,7 @@ export function ProfilePage() {
 
   const handleSave = async () => {
     if (!user) return;
-    
+
     setError('');
     setSuccess('');
     setIsSaving(true);
@@ -90,7 +91,7 @@ export function ProfilePage() {
 
   const handleChangePassword = async () => {
     if (!user) return;
-    
+
     setError('');
     setSuccess('');
     setIsSaving(true);
@@ -108,6 +109,16 @@ export function ProfilePage() {
       setError(err.response?.data?.message || t('profile.passwordChangeFailed'));
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+      logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
     }
   };
 
@@ -230,16 +241,27 @@ export function ProfilePage() {
                   />
 
                   {!isChangingPassword ? (
-                    <button
-                      onClick={() => setIsChangingPassword(true)}
-                      className="font-heading font-medium text-base text-[#3A3DEF] hover:text-[#2e31c9] transition-colors"
-                    >
-                      {t('profile.changePasswordButton')}
-                    </button>
+                    <div className="flex items-center justify-between">
+                      <button
+                        onClick={() => setIsChangingPassword(true)}
+                        className="font-heading font-medium text-base text-[#3A3DEF] hover:text-[#2e31c9] transition-colors hover:cursor-pointer"
+                      >
+                        {t('profile.changePasswordButton')}
+                      </button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        rounded="md"
+                        onClick={handleLogout}
+                        className="border-red-600! text-red-600! hover:bg-red-50!"
+                      >
+                        {t('profile.logoutButton')}
+                      </Button>
+                    </div>
                   ) : (
                     <div className="space-y-4 pt-4 border-t border-gray-300">
                       <h3 className="text-lg font-heading font-semibold">{t('profile.changePasswordTitle')}</h3>
-                      
+
                       <Input
                         label={t('profile.currentPassword')}
                         type="password"

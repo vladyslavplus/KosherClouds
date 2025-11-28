@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { productsApi, ProductCategory, ProductResponse, ProductParameters } from '@/lib/api/products';
+import { cartApi, ShoppingCartDto } from '@/lib/api/cart';
+import { useAuthStore } from '@/lib/stores/authStore';
 import { ProductCard } from './components/ProductCard';
 import { ProductFilters } from './components/ProductFilters';
 import { ProductModal } from './components/ProductModal';
@@ -10,17 +12,20 @@ import { Select, SelectOption } from '@/shared/ui/Select';
 export default function MenuPage() {
   const { t, i18n } = useTranslation();
   const isUk = i18n.language === 'uk';
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const [products, setProducts] = useState<ProductResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [cart, setCart] = useState<ShoppingCartDto | null>(null);
 
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory | null>(null);
   const [isVegetarian, setIsVegetarian] = useState(false);
   const [isPromotional, setIsPromotional] = useState(false);
 
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState('');
+  const [sortBy, setSortBy] = useState('category asc');
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -57,6 +62,12 @@ export default function MenuPage() {
     setCurrentPage(1);
   }, [selectedCategory, isVegetarian, isPromotional, selectedSubcategory, sortBy, pageSize]);
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCart();
+    }
+  }, [isAuthenticated]);
+
   const fetchProducts = async () => {
     try {
       setLoading(true);
@@ -79,12 +90,11 @@ export default function MenuPage() {
         params.isPromotional = true;
       }
 
-      if (sortBy) {
-        if (isUk && sortBy.includes('name')) {
-          params.orderBy = sortBy.replace('name', 'nameUk');
-        } else {
-          params.orderBy = sortBy;
-        }
+      const effectiveSortBy = sortBy || 'category asc';
+      if (isUk && effectiveSortBy.includes('name')) {
+        params.orderBy = effectiveSortBy.replace('name', 'nameUk');
+      } else {
+        params.orderBy = effectiveSortBy;
       }
 
       if (selectedSubcategory) {
@@ -101,6 +111,21 @@ export default function MenuPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchCart = async () => {
+    try {
+      const cartData = await cartApi.getCart();
+      setCart(cartData);
+    } catch (error) {
+      console.error('Error fetching cart:', error);
+    }
+  };
+
+  const getCartQuantity = (productId: string): number => {
+    if (!cart) return 0;
+    const item = cart.items.find((i) => i.productId === productId);
+    return item?.quantity || 0;
   };
 
   const handleCategoryChange = (category: ProductCategory | null) => {
@@ -188,6 +213,8 @@ export default function MenuPage() {
                       key={product.id}
                       product={product}
                       onDetailsClick={() => openProductModal(product)}
+                      cartQuantity={getCartQuantity(product.id)}
+                      onCartUpdate={fetchCart}
                     />
                   ))}
                 </div>

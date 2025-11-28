@@ -4,6 +4,7 @@ import { Navbar, Footer, Container } from './shared/layouts'
 import { LoginPage, RegisterPage, ForgotPasswordPage, ResetPasswordPage } from './pages/auth'
 import { ProfilePage } from './pages/profile'
 import MenuPage from './pages/menu'
+import CartPage from './pages/cart'
 
 function HomePage() {
   return (
@@ -29,9 +30,10 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path='menu' element= {<MenuPage />} />
+        <Route path='/menu' element={<MenuPage />} />
+        <Route path='/cart' element={<CartPage />} />
       </Routes>
-
+      
       <Footer />
     </div>
   )

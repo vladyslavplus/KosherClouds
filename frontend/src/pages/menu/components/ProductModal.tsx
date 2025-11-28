@@ -37,6 +37,9 @@ export const ProductModal = ({ product, isOpen, onClose }: ProductModalProps) =>
   const ingredients = lang === 'Uk' && product.ingredientsUk?.length ? product.ingredientsUk : product.ingredients;
   const allergens = lang === 'Uk' && product.allergensUk?.length ? product.allergensUk : product.allergens;
 
+  const hasDiscount = product.discountPrice !== null && product.discountPrice !== undefined;
+  const displayPrice = hasDiscount ? product.discountPrice : product.price;
+
   const hookahDetails = product.hookahDetails
     ? {
         tobaccoFlavor: lang === 'Uk' && product.hookahDetails.tobaccoFlavorUk
@@ -61,13 +64,23 @@ export const ProductModal = ({ product, isOpen, onClose }: ProductModalProps) =>
         className="bg-white rounded-lg max-w-lg md:max-w-xl lg:max-w-2xl w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {product.photos[0] && (
-          <img
-            src={product.photos[0]}
-            alt={name}
-            className="w-full h-48 md:h-56 lg:h-64 object-cover"
-          />
-        )}
+        <div className="relative">
+          {product.photos[0] && (
+            <img
+              src={product.photos[0]}
+              alt={name}
+              className="w-full h-48 md:h-56 lg:h-64 object-cover"
+            />
+          )}
+          
+          {product.isPromotional && (
+            <div className="absolute top-4 left-4">
+              <span className="bg-linear-to-r from-[#8B6914] to-[#b8881a] text-white px-4 py-2 rounded-full text-base font-semibold shadow-lg">
+                {t('menu.specialOffer')}
+              </span>
+            </div>
+          )}
+        </div>
 
         <div className="p-6">
           <div className="flex justify-between items-start mb-4">
@@ -81,9 +94,24 @@ export const ProductModal = ({ product, isOpen, onClose }: ProductModalProps) =>
           </div>
 
           <div className="flex items-center gap-4 mb-4">
-            <span className="text-2xl font-semibold text-[#8B6914]">
-              {product.price.toFixed(2)} {t('menu.uah')}
-            </span>
+            {hasDiscount ? (
+              <div className="flex items-center gap-3">
+                <span className="text-gray-400 line-through text-xl">
+                  {product.price.toFixed(2)} {t('menu.uah')}
+                </span>
+                <span className="text-2xl font-semibold text-[#8B6914]">
+                  {displayPrice!.toFixed(2)} {t('menu.uah')}
+                </span>
+                <span className="bg-red-100 text-red-700 px-2 py-1 rounded text-sm font-semibold">
+                  {t('menu.discount')} -{Math.round(((product.price - displayPrice!) / product.price) * 100)}%
+                </span>
+              </div>
+            ) : (
+              <span className="text-2xl font-semibold text-[#8B6914]">
+                {product.price.toFixed(2)} {t('menu.uah')}
+              </span>
+            )}
+            
             {product.rating > 0 && (
               <div className="flex items-center gap-1 text-gray-600">
                 <span>⭐</span>

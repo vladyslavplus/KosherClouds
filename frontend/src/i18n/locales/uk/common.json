@@ -10,13 +10,15 @@
     "categories": "Категорії",
     "allCategories": "Всі категорії",
     "dish": "Перші страви",
-    "set": "Другі страви",
+    "set": "Сети",
     "dessert": "Десерти",
     "drink": "Напої",
     "hookah": "Кальяни",
     "filters": "Фільтри",
     "vegetarian": "Вегетаріанське",
     "promotional": "Акційне",
+    "specialOffer": "Спеціальна пропозиція",
+    "discount": "Знижка",
     "hookahType": "Тип кальяну",
     "sortBy": "Сортування",
     "priceAsc": "Ціна: За зростанням",
@@ -89,9 +91,10 @@
     "adminPanel": "Адмін панель",
     "name": "Ім'я",
     "password": "Пароль",
-    "email": "Email",
+    "email": "Пошта",
     "phone": "Телефон",
     "saveButton": "Зберегти",
+    "logoutButton": "Вийти",
     "changePasswordButton": "Змінити пароль",
     "changePasswordTitle": "Зміна паролю",
     "currentPassword": "Поточний пароль",
@@ -107,5 +110,12 @@
     "ordersPlaceholder": "Список ваших замовлень буде тут...",
     "bookingsPlaceholder": "Список ваших бронювань буде тут...",
     "adminPlaceholder": "Адміністративні функції будуть тут..."
+  },
+  "cart": {
+    "title": "Кошик",
+    "empty": "Ваш кошик порожній",
+    "total": "Всього",
+    "checkout": "Оформити замовлення",
+    "remove": "Видалити"
   }
 }

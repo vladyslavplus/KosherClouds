@@ -17,8 +17,10 @@
     "filters": "Filters",
     "vegetarian": "Vegetarian",
     "promotional": "Promotional",
+    "specialOffer": "Special Offer",
+    "discount": "Discount",
     "hookahType": "Hookah Type",
-    "sortBy": "Sort by",
+    "sortBy": "Sort By",
     "priceAsc": "Price: Low to High",
     "priceDesc": "Price: High to Low",
     "nameAsc": "Name: A-Z",
@@ -92,6 +94,7 @@
     "email": "Email",
     "phone": "Phone",
     "saveButton": "Save",
+    "logoutButton": "Logout",
     "changePasswordButton": "Change Password",
     "changePasswordTitle": "Change Password",
     "currentPassword": "Current Password",
@@ -107,5 +110,12 @@
     "ordersPlaceholder": "Your orders will be here...",
     "bookingsPlaceholder": "Your bookings will be here...",
     "adminPlaceholder": "Administrative functions will be here..."
+  },
+  "cart": {
+    "title": "Cart",
+    "empty": "Your cart is empty",
+    "total": "Total",
+    "checkout": "Checkout",
+    "remove": "Remove"
   }
 }
