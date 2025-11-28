@@ -1,3 +1,4 @@
+using KosherClouds.ProductService.Consumers;
 using KosherClouds.ProductService.Data;
 using KosherClouds.ProductService.Data.Seed;
 using KosherClouds.ProductService.Services;
@@ -19,6 +20,11 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 
 builder.Services.AddMassTransit(x =>
 {
+    x.AddConsumer<ReviewCreatedConsumer>(cfg =>
+    {
+        cfg.UseConcurrentMessageLimit(1);
+    });
+
     x.UsingRabbitMq((context, cfg) =>
     {
         cfg.Host(builder.Configuration["RabbitMq:Host"], "/", h =>
@@ -26,6 +32,8 @@ builder.Services.AddMassTransit(x =>
             h.Username(builder.Configuration["RabbitMq:Username"]!);
             h.Password(builder.Configuration["RabbitMq:Password"]!);
         });
+
+        cfg.ConfigureEndpoints(context);
     });
 });
 

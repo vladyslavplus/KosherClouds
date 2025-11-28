@@ -106,6 +106,13 @@ public static class SharedSeedData
     public const decimal ProductPomegranatJuicePrice = 55.00m;
     public const decimal ProductMintTeaPrice = 40.00m;
 
+    public const decimal ProductFalafelSetDiscountPrice = 199.00m;
+    public const decimal ProductShakshukaDiscountPrice = 105.00m;
+    public const decimal ProductBrisketDiscountPrice = 299.00m;
+    public const decimal ProductHookahTropicalDiscountPrice = 280.00m;
+    public const decimal ProductBabkaDiscountPrice = 120.00m;
+    public const decimal ProductSchnitzelDiscountPrice = 175.00m;
+
     public static readonly Guid Order1Id = Guid.Parse("11111111-1111-1111-1111-111111111111");
     public static readonly Guid Order2Id = Guid.Parse("22222222-2222-2222-2222-222222222222");
     public static readonly Guid Order3Id = Guid.Parse("33333333-3333-3333-3333-333333333333");
