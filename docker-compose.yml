@@ -153,6 +153,7 @@ services:
       RabbitMq__Password: ${RABBITMQ_DEFAULT_PASS}
       ServiceUrls__CartService: http://cartservice:8080
       ServiceUrls__ProductService: http://productservice:8080
+      ServiceUrls__UserService: http://userservice:8080
     depends_on:
       postgres:
         condition: service_healthy
