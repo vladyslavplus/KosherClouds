@@ -36,6 +36,13 @@ builder.Services.AddHttpClient<IProductApiClient, ProductApiClient>((serviceProv
 })
 .AddHttpMessageHandler<AuthenticationDelegatingHandler>();
 
+builder.Services.AddHttpClient<IUserApiClient, UserApiClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ServiceUrls:UserService"]
+        ?? "http://localhost:5002");
+})
+.AddHttpMessageHandler<AuthenticationDelegatingHandler>();
+
 builder.Services.AddAutoMapper(typeof(OrderService).Assembly);
 builder.Services.AddJwtAuthentication(builder.Configuration);
 

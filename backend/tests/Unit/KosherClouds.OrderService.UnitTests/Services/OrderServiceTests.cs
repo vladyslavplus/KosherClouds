@@ -25,6 +25,7 @@ namespace KosherClouds.OrderService.UnitTests.Services
         private readonly Mock<IPublishEndpoint> _publishEndpointMock;
         private readonly Mock<ICartApiClient> _cartApiClientMock;
         private readonly Mock<IProductApiClient> _productApiClientMock;
+        private readonly Mock<IUserApiClient> _userApiClientMock;
         private readonly OrderServiceClass _orderService;
         private bool _disposed;
 
@@ -36,6 +37,7 @@ namespace KosherClouds.OrderService.UnitTests.Services
             _publishEndpointMock = new Mock<IPublishEndpoint>();
             _cartApiClientMock = MockApiClientsFactory.CreateCartApiClient();
             _productApiClientMock = MockApiClientsFactory.CreateProductApiClient();
+            _userApiClientMock = MockApiClientsFactory.CreateUserApiClient();
 
             _sortHelperMock = new Mock<ISortHelper<Order>>();
             _sortHelperMock
@@ -55,6 +57,7 @@ namespace KosherClouds.OrderService.UnitTests.Services
                 _publishEndpointMock.Object,
                 _cartApiClientMock.Object,
                 _productApiClientMock.Object,
+                _userApiClientMock.Object,
                 isInMemory: true);
         }
 

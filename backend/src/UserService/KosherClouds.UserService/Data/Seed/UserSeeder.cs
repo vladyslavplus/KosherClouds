@@ -29,7 +29,9 @@ namespace KosherClouds.UserService.Data.Seed
                     Email = SharedSeedData.AdminEmail,
                     FirstName = SharedSeedData.AdminFirstName,
                     LastName = SharedSeedData.AdminLastName,
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    PhoneNumber = SharedSeedData.AdminPhoneNumber,
+                    PhoneNumberConfirmed = true
                 };
 
                 var result = await userManager.CreateAsync(admin, SharedSeedData.AdminPassword);
@@ -46,7 +48,9 @@ namespace KosherClouds.UserService.Data.Seed
                     Email = SharedSeedData.ManagerEmail,
                     FirstName = SharedSeedData.ManagerFirstName,
                     LastName = SharedSeedData.ManagerLastName,
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    PhoneNumber = SharedSeedData.ManagerPhoneNumber,
+                    PhoneNumberConfirmed = true
                 };
 
                 var result = await userManager.CreateAsync(manager, SharedSeedData.ManagerPassword);
@@ -63,7 +67,9 @@ namespace KosherClouds.UserService.Data.Seed
                     Email = SharedSeedData.UserEmail,
                     FirstName = SharedSeedData.UserFirstName,
                     LastName = SharedSeedData.UserLastName,
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    PhoneNumber = SharedSeedData.UserPhoneNumber,
+                    PhoneNumberConfirmed = true
                 };
 
                 var result = await userManager.CreateAsync(user, SharedSeedData.UserPassword);

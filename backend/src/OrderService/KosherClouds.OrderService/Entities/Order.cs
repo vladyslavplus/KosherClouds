@@ -18,6 +18,18 @@ namespace KosherClouds.OrderService.Entities
         [Precision(18, 2)]
         public decimal TotalAmount { get; set; }
 
+        [Required]
+        [MaxLength(100)]
+        public string ContactName { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(20)]
+        public string ContactPhone { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(100)]
+        public string ContactEmail { get; set; } = string.Empty;
+
         [MaxLength(500)]
         public string? Notes { get; set; }
 

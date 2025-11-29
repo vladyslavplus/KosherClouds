@@ -22,6 +22,7 @@ namespace KosherClouds.OrderService.Services
         private readonly IPublishEndpoint _publishEndpoint;
         private readonly ICartApiClient _cartApiClient;
         private readonly IProductApiClient _productApiClient;
+        private readonly IUserApiClient _userApiClient;
         private readonly bool _isInMemory;
 
         public OrderService(
@@ -32,6 +33,7 @@ namespace KosherClouds.OrderService.Services
             IPublishEndpoint publishEndpoint,
             ICartApiClient cartApiClient,
             IProductApiClient productApiClient,
+            IUserApiClient userApiClient,
             bool isInMemory = false)
         {
             _dbContext = dbContext;
@@ -41,6 +43,7 @@ namespace KosherClouds.OrderService.Services
             _publishEndpoint = publishEndpoint;
             _cartApiClient = cartApiClient;
             _productApiClient = productApiClient;
+            _userApiClient = userApiClient;
             _isInMemory = isInMemory;
         }
 
@@ -124,6 +127,19 @@ namespace KosherClouds.OrderService.Services
                 throw new InvalidOperationException("Cart is empty");
             }
 
+            var userInfo = await _userApiClient.GetUserAsync(userId, cancellationToken);
+            if (userInfo == null)
+            {
+                _logger.LogWarning("Failed to fetch user info for {UserId}", userId);
+                throw new InvalidOperationException("Failed to fetch user information");
+            }
+
+            if (string.IsNullOrWhiteSpace(userInfo.PhoneNumber))
+            {
+                _logger.LogWarning("User {UserId} has no phone number in profile", userId);
+                throw new InvalidOperationException("Phone number is required. Please update your profile.");
+            }
+
             var orderItems = new List<OrderItemCreateDto>();
             var unavailableProducts = new List<Guid>();
 
@@ -145,7 +161,8 @@ namespace KosherClouds.OrderService.Services
                 {
                     ProductId = product.Id,
                     ProductNameSnapshot = product.Name,
-                    UnitPriceSnapshot = product.Price,
+                    ProductNameSnapshotUk = product.NameUk,
+                    UnitPriceSnapshot = product.ActualPrice,
                     Quantity = cartItem.Quantity
                 });
             }
@@ -160,6 +177,9 @@ namespace KosherClouds.OrderService.Services
             var orderDto = new OrderCreateDto
             {
                 UserId = userId,
+                ContactName = userInfo.DisplayName,
+                ContactPhone = userInfo.PhoneNumber,
+                ContactEmail = userInfo.Email ?? string.Empty,
                 PaymentType = PaymentType.OnPickup,
                 Items = orderItems
             };
@@ -230,6 +250,9 @@ namespace KosherClouds.OrderService.Services
 
             if (request != null)
             {
+                order.ContactName = request.ContactName;
+                order.ContactPhone = request.ContactPhone;
+
                 if (!string.IsNullOrEmpty(request.Notes))
                     order.Notes = request.Notes;
 
@@ -345,6 +368,7 @@ namespace KosherClouds.OrderService.Services
                 {
                     ProductId = item.ProductId,
                     ProductName = item.ProductNameSnapshot,
+                    ProductNameUk = item.ProductNameSnapshotUk,
                     UnitPrice = item.UnitPriceSnapshot,
                     Quantity = item.Quantity,
                     LineTotal = item.LineTotal

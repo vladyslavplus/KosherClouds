@@ -11,6 +11,9 @@ namespace KosherClouds.OrderService.DTOs.OrderItem
         [MaxLength(250)]
         public string ProductNameSnapshot { get; set; } = string.Empty;
 
+        [MaxLength(250)]
+        public string? ProductNameSnapshotUk { get; set; }
+
         [Required]
         [Range(0.01, double.MaxValue)]
         public decimal UnitPriceSnapshot { get; set; }

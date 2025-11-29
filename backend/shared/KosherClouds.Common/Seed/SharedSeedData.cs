@@ -14,6 +14,10 @@ public static class SharedSeedData
     public const string ManagerEmail = "manager@kosherclouds.com";
     public const string UserEmail = "user@kosherclouds.com";
 
+    public const string AdminPhoneNumber = "+38031313213";
+    public const string ManagerPhoneNumber = "+38031223213";
+    public const string UserPhoneNumber = "+38031314413";
+
     public const string AdminPassword = "Admin@1234";
     public const string ManagerPassword = "Manager@1234";
     public const string UserPassword = "User@1234";

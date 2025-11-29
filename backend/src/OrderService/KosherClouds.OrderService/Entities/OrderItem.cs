@@ -20,6 +20,9 @@ namespace KosherClouds.OrderService.Entities
         [MaxLength(250)]
         public string ProductNameSnapshot { get; set; } = string.Empty;
 
+        [MaxLength(250)]
+        public string? ProductNameSnapshotUk { get; set; }
+
         [Required]
         [Precision(18, 2)]
         public decimal UnitPriceSnapshot { get; set; }

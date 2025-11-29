@@ -1,6 +1,6 @@
-﻿namespace KosherClouds.UserService.DTOs.User
+﻿namespace KosherClouds.OrderService.DTOs.External
 {
-    public class UserPublicDto
+    public class UserInfoDto
     {
         public Guid Id { get; set; }
         public string? UserName { get; set; }

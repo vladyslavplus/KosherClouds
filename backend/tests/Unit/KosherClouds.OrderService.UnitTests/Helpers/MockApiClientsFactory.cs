@@ -16,6 +16,11 @@ namespace KosherClouds.OrderService.UnitTests.Helpers
             return new Mock<IProductApiClient>();
         }
 
+        public static Mock<IUserApiClient> CreateUserApiClient()
+        {
+            return new Mock<IUserApiClient>();
+        }
+
         public static void SetupGetCart(
             this Mock<ICartApiClient> mock,
             Guid userId,
@@ -49,6 +54,25 @@ namespace KosherClouds.OrderService.UnitTests.Helpers
             foreach (var kvp in products)
             {
                 mock.SetupGetProduct(kvp.Key, kvp.Value);
+            }
+        }
+
+        public static void SetupGetUser(
+            this Mock<IUserApiClient> mock,
+            Guid userId,
+            UserInfoDto? user)
+        {
+            mock.Setup(x => x.GetUserAsync(userId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(user!);
+        }
+
+        public static void SetupGetUsers(
+            this Mock<IUserApiClient> mock,
+            Dictionary<Guid, UserInfoDto?> users)
+        {
+            foreach (var kvp in users)
+            {
+                mock.SetupGetUser(kvp.Key, kvp.Value);
             }
         }
     }
