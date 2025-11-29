@@ -3,19 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { cartApi, ShoppingCartDto } from '@/lib/api/cart';
 import { productsApi, ProductResponse } from '@/lib/api/products';
+import { ordersApi } from '@/lib/api/orders';
 import { useAuthStore } from '@/lib/stores/authStore';
-import { Button } from '@/shared/ui/Button';
 import { CartItem } from './components/CartItem';
+import { Button } from '@/shared/ui/Button';
 
 export default function CartPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-
+  
   const [cart, setCart] = useState<ShoppingCartDto | null>(null);
   const [products, setProducts] = useState<Map<string, ProductResponse>>(new Map());
-  
   const [loading, setLoading] = useState(true);
+  const [checkingOut, setCheckingOut] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -27,7 +28,7 @@ export default function CartPage() {
 
   const loadCart = async () => {
     if (!cart) {
-        setLoading(true);
+      setLoading(true);
     }
     
     try {
@@ -37,7 +38,7 @@ export default function CartPage() {
         productsApi.getProductById(item.productId)
       );
       const productsData = await Promise.all(productPromises);
-
+      
       const productsMap = new Map<string, ProductResponse>();
       productsData.forEach((product) => {
         productsMap.set(product.id, product);
@@ -52,8 +53,20 @@ export default function CartPage() {
     }
   };
 
-  const handleCheckout = () => {
-    console.log('Checkout clicked', cart);
+  const handleCheckout = async () => {
+    if (!cart || cart.items.length === 0) return;
+
+    setCheckingOut(true);
+    try {
+      const order = await ordersApi.createOrderFromCart();
+      
+      navigate('/checkout', { state: { order } });
+    } catch (error) {
+      console.error('Error creating order:', error);
+      alert(t('cart.checkoutError'));
+    } finally {
+      setCheckingOut(false);
+    }
   };
 
   const totalAmount = cart?.items.reduce((sum, item) => {
@@ -97,7 +110,7 @@ export default function CartPage() {
           {cart.items.map((item) => {
             const product = products.get(item.productId);
             if (!product) return null;
-
+            
             return (
               <CartItem
                 key={item.productId}
@@ -114,7 +127,7 @@ export default function CartPage() {
             <span className="text-xl font-semibold text-[#1A1F3A]">
               {t('cart.total')}
             </span>
-            <span className="text-2xl font-bold text-[#8B6914]">
+            <span className="text-2xl font-bold text-[#8B6914] font-sans tabular-nums">
               {totalAmount.toFixed(2)} {t('menu.uah')}
             </span>
           </div>
@@ -126,6 +139,7 @@ export default function CartPage() {
           rounded="full"
           fullWidth
           onClick={handleCheckout}
+          isLoading={checkingOut}
         >
           {t('cart.checkout')}
         </Button>

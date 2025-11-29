@@ -5,6 +5,7 @@ import { LoginPage, RegisterPage, ForgotPasswordPage, ResetPasswordPage } from '
 import { ProfilePage } from './pages/profile'
 import MenuPage from './pages/menu'
 import CartPage from './pages/cart'
+import CheckoutPage from './pages/order/CheckoutPage'
 
 function HomePage() {
   return (
@@ -32,6 +33,7 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path='/menu' element={<MenuPage />} />
         <Route path='/cart' element={<CartPage />} />
+        <Route path='/checkout' element={<CheckoutPage />} />
       </Routes>
       
       <Footer />

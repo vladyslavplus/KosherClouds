@@ -116,6 +116,30 @@
     "empty": "Your cart is empty",
     "total": "Total",
     "checkout": "Checkout",
-    "remove": "Remove"
+    "remove": "Remove",
+    "checkoutError": "Error creating order. Please try again."
+  },
+  "checkout": {
+    "title": "Checkout",
+    "contactInfo": "Contact Information",
+    "name": "Name",
+    "namePlaceholder": "Enter your name",
+    "email": "Email",
+    "phone": "Phone",
+    "phoneRequired": "Phone number is required",
+    "phonePlaceholder": "Enter your phone number",
+    "contactInfoNote": "If you want to change contact details for this order, enter them here or update in your profile.",
+    "orderNotes": "Order Notes",
+    "orderNotesPlaceholder": "Add a note to your order (optional)",
+    "pickupOnlyWarning": "Attention: pickup only available",
+    "payment": "Payment",
+    "paymentMethod": "Payment method",
+    "paymentOnPickup": "Payment on pickup",
+    "paymentOnline": "Card online",
+    "yourOrder": "Your Order",
+    "total": "Total",
+    "confirmOrder": "Confirm Order",
+    "orderConfirmed": "Order confirmed successfully!",
+    "error": "Error confirming order. Please try again."
   }
 }
