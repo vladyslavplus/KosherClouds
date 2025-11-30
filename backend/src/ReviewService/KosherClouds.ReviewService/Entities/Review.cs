@@ -10,11 +10,13 @@ namespace KosherClouds.ReviewService.Entities
         [Required]
         public Guid OrderId { get; set; }
 
-        [Required]
-        public Guid ProductId { get; set; }
+        public Guid? ProductId { get; set; }
 
         [Required]
         public Guid UserId { get; set; }
+
+        [Required]
+        public ReviewType ReviewType { get; set; }
 
         [Required]
         [Range(1, 5)]
@@ -34,8 +36,11 @@ namespace KosherClouds.ReviewService.Entities
 
         public DateTimeOffset? UpdatedAt { get; set; }
 
+        [MaxLength(500)]
         public string? ModerationNotes { get; set; }
+
         public Guid? ModeratedBy { get; set; }
+
         public DateTimeOffset? ModeratedAt { get; set; }
     }
 }

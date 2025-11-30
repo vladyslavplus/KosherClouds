@@ -17,6 +17,7 @@ namespace KosherClouds.ReviewService.UnitTests.Helpers
             {
                 Id = Guid.NewGuid(),
                 ProductId = Guid.NewGuid(),
+                ReviewType = ReviewType.Product,
                 UserId = Guid.NewGuid(),
                 OrderId = Guid.NewGuid(),
                 Rating = _faker.Random.Int(1, 5),
@@ -42,18 +43,38 @@ namespace KosherClouds.ReviewService.UnitTests.Helpers
         {
             var review = CreateValidReview();
             review.ProductId = productId;
+            review.ReviewType = ReviewType.Product;
             review.UserId = userId;
             review.Rating = rating;
             return review;
         }
 
-        public static Review CreateReviewForOrder(Guid orderId, Guid userId, Guid productId)
+        public static Review CreateReviewForOrder(Guid orderId, Guid userId, Guid? productId = null)
         {
             var review = CreateValidReview();
             review.OrderId = orderId;
             review.UserId = userId;
             review.ProductId = productId;
+            review.ReviewType = productId.HasValue ? ReviewType.Product : ReviewType.Order;
             return review;
+        }
+
+        public static Review CreateOrderReview(Guid orderId, Guid userId, int rating = 5)
+        {
+            return new Review
+            {
+                Id = Guid.NewGuid(),
+                ProductId = null,
+                ReviewType = ReviewType.Order,
+                UserId = userId,
+                OrderId = orderId,
+                Rating = rating,
+                Comment = _faker.Lorem.Paragraph(),
+                IsVerifiedPurchase = true,
+                Status = ReviewStatus.Published,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = null
+            };
         }
 
         public static Review CreateHiddenReview()
@@ -81,12 +102,25 @@ namespace KosherClouds.ReviewService.UnitTests.Helpers
             return review;
         }
 
-        public static ReviewCreateDto CreateValidReviewCreateDto(Guid? orderId = null, Guid? productId = null)
+        public static ReviewCreateDto CreateValidReviewCreateDto(Guid? orderId = null, Guid? productId = null, ReviewType? reviewType = null)
         {
             return new ReviewCreateDto
             {
                 ProductId = productId ?? Guid.NewGuid(),
                 OrderId = orderId ?? Guid.NewGuid(),
+                ReviewType = reviewType ?? ReviewType.Product,
+                Rating = _faker.Random.Int(1, 5),
+                Comment = _faker.Lorem.Paragraph()
+            };
+        }
+
+        public static ReviewCreateDto CreateOrderReviewDto(Guid orderId)
+        {
+            return new ReviewCreateDto
+            {
+                ProductId = null,
+                OrderId = orderId,
+                ReviewType = ReviewType.Order,
                 Rating = _faker.Random.Int(1, 5),
                 Comment = _faker.Lorem.Paragraph()
             };
@@ -138,6 +172,7 @@ namespace KosherClouds.ReviewService.UnitTests.Helpers
                         Id = Guid.NewGuid(),
                         ProductId = productId1,
                         ProductNameSnapshot = "Test Product 1",
+                        ProductNameSnapshotUk = "Тестовий Продукт 1",
                         Quantity = 2,
                         UnitPriceSnapshot = 50.00m
                     },
@@ -146,6 +181,7 @@ namespace KosherClouds.ReviewService.UnitTests.Helpers
                         Id = Guid.NewGuid(),
                         ProductId = productId2,
                         ProductNameSnapshot = "Test Product 2",
+                        ProductNameSnapshotUk = "Тестовий Продукт 2",
                         Quantity = 1,
                         UnitPriceSnapshot = 150.00m
                     }

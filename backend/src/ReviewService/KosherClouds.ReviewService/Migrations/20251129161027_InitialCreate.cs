@@ -17,15 +17,16 @@ namespace KosherClouds.ReviewService.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     OrderId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ProductId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductId = table.Column<Guid>(type: "uuid", nullable: true),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ReviewType = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     Rating = table.Column<int>(type: "integer", nullable: false),
                     Comment = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     IsVerifiedPurchase = table.Column<bool>(type: "boolean", nullable: false),
                     Status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    ModerationNotes = table.Column<string>(type: "text", nullable: true),
+                    ModerationNotes = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     ModeratedBy = table.Column<Guid>(type: "uuid", nullable: true),
                     ModeratedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
                 },
@@ -38,7 +39,15 @@ namespace KosherClouds.ReviewService.Migrations
                 name: "IX_Review_Order_Product_User_Unique",
                 table: "Reviews",
                 columns: new[] { "OrderId", "ProductId", "UserId" },
-                unique: true);
+                unique: true,
+                filter: "\"ProductId\" IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Review_Order_User_Unique",
+                table: "Reviews",
+                columns: new[] { "OrderId", "UserId" },
+                unique: true,
+                filter: "\"ProductId\" IS NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reviews_CreatedAt",
@@ -54,6 +63,11 @@ namespace KosherClouds.ReviewService.Migrations
                 name: "IX_Reviews_ProductId",
                 table: "Reviews",
                 column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Reviews_ReviewType",
+                table: "Reviews",
+                column: "ReviewType");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reviews_Status",

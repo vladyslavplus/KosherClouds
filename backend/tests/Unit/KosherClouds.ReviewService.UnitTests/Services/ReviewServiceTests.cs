@@ -234,7 +234,7 @@ namespace KosherClouds.ReviewService.UnitTests.Services
 
             var parameters = new ReviewParameters
             {
-                Status = "Hidden",
+                Status = ReviewStatus.Hidden,
                 PageNumber = 1,
                 PageSize = 10
             };
@@ -371,7 +371,7 @@ namespace KosherClouds.ReviewService.UnitTests.Services
 
             // Assert
             result.Should().NotBeNull();
-            result[0].Products[0].HasReview.Should().BeTrue();
+            result[0].Products[0].AlreadyReviewed.Should().BeTrue();
             result[0].Products[0].ExistingReviewId.Should().Be(existingReview.Id);
             result[0].ReviewableProductsCount.Should().Be(1); // Only 1 unreviewed
         }
@@ -411,7 +411,7 @@ namespace KosherClouds.ReviewService.UnitTests.Services
             // Assert
             result.Should().NotBeNull();
             result.Should().HaveCount(2);
-            result.Should().AllSatisfy(p => p.HasReview.Should().BeFalse());
+            result.Should().AllSatisfy(p => p.AlreadyReviewed.Should().BeFalse());
         }
 
         [Fact]

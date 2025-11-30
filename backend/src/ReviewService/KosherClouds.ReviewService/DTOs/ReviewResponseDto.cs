@@ -1,10 +1,15 @@
-﻿namespace KosherClouds.ReviewService.DTOs
+﻿using KosherClouds.ReviewService.Entities;
+
+namespace KosherClouds.ReviewService.DTOs
 {
     public class ReviewResponseDto
     {
         public Guid Id { get; set; }
         public Guid OrderId { get; set; }
-        public Guid ProductId { get; set; }
+        public ReviewType ReviewType { get; set; }
+        public Guid? ProductId { get; set; }
+        public string? ProductName { get; set; }
+        public string? ProductNameUk { get; set; }
         public Guid UserId { get; set; }
         public string? UserName { get; set; }
         public int Rating { get; set; }

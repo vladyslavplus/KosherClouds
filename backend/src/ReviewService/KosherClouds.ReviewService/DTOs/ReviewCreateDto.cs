@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using KosherClouds.ReviewService.Entities;
+using System.ComponentModel.DataAnnotations;
 
 namespace KosherClouds.ReviewService.DTOs
 {
@@ -8,7 +9,9 @@ namespace KosherClouds.ReviewService.DTOs
         public Guid OrderId { get; set; }
 
         [Required]
-        public Guid ProductId { get; set; }
+        public ReviewType ReviewType { get; set; }
+
+        public Guid? ProductId { get; set; }
 
         [Required]
         [Range(1, 5, ErrorMessage = "Rating must be between 1 and 5")]

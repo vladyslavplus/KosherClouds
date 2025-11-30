@@ -45,16 +45,22 @@ namespace KosherClouds.ReviewService.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("ModerationNotes")
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("ProductId")
+                    b.Property<Guid?>("ProductId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("Rating")
                         .HasColumnType("integer");
+
+                    b.Property<string>("ReviewType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -75,13 +81,21 @@ namespace KosherClouds.ReviewService.Migrations
 
                     b.HasIndex("ProductId");
 
+                    b.HasIndex("ReviewType");
+
                     b.HasIndex("Status");
 
                     b.HasIndex("UserId");
 
+                    b.HasIndex("OrderId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Review_Order_User_Unique")
+                        .HasFilter("\"ProductId\" IS NULL");
+
                     b.HasIndex("OrderId", "ProductId", "UserId")
                         .IsUnique()
-                        .HasDatabaseName("IX_Review_Order_Product_User_Unique");
+                        .HasDatabaseName("IX_Review_Order_Product_User_Unique")
+                        .HasFilter("\"ProductId\" IS NOT NULL");
 
                     b.ToTable("Reviews");
                 });

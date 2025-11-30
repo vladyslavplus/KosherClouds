@@ -2,10 +2,11 @@
 using KosherClouds.Contracts.Reviews;
 using KosherClouds.ReviewService.Data;
 using KosherClouds.ReviewService.DTOs;
+using KosherClouds.ReviewService.DTOs.External;
 using KosherClouds.ReviewService.Entities;
 using KosherClouds.ReviewService.Parameters;
-using KosherClouds.ReviewService.Services.Interfaces;
 using KosherClouds.ReviewService.Services.External;
+using KosherClouds.ReviewService.Services.Interfaces;
 using KosherClouds.ServiceDefaults.Helpers;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
@@ -57,12 +58,17 @@ namespace KosherClouds.ReviewService.Services
             if (parameters.OrderId.HasValue)
                 query = query.Where(r => r.OrderId == parameters.OrderId.Value);
 
-            if (!string.IsNullOrWhiteSpace(parameters.Status))
+
+            if (!string.IsNullOrWhiteSpace(parameters.ReviewType) &&
+                Enum.TryParse<ReviewType>(parameters.ReviewType, true, out var reviewTypeEnum))
             {
-                if (Enum.TryParse<ReviewStatus>(parameters.Status, true, out var status))
-                {
-                    query = query.Where(r => r.Status == status);
-                }
+                query = query.Where(r => r.ReviewType == reviewTypeEnum);
+            }
+
+            if (!string.IsNullOrWhiteSpace(parameters.Status) &&
+                Enum.TryParse<ReviewStatus>(parameters.Status, true, out var statusEnum))
+            {
+                query = query.Where(r => r.Status == statusEnum);
             }
             else
             {
@@ -81,12 +87,13 @@ namespace KosherClouds.ReviewService.Services
             if (parameters.MaxCreatedDate.HasValue)
                 query = query.Where(r => r.CreatedAt <= parameters.MaxCreatedDate.Value);
 
-            if (parameters.VerifiedOnly.HasValue && parameters.VerifiedOnly.Value)
+            if (parameters.VerifiedOnly == true)
                 query = query.Where(r => r.IsVerifiedPurchase);
 
             if (!string.IsNullOrWhiteSpace(parameters.SearchTerm))
             {
-                query = query.Where(r => r.Comment != null &&
+                query = query.Where(r =>
+                    r.Comment != null &&
                     EF.Functions.ILike(r.Comment, $"%{parameters.SearchTerm}%"));
             }
 
@@ -99,21 +106,13 @@ namespace KosherClouds.ReviewService.Services
                 parameters.PageSize,
                 cancellationToken);
 
-            var reviewDtos = _mapper.Map<IEnumerable<ReviewResponseDto>>(pagedReviews);
+            var reviewDtos = _mapper.Map<List<ReviewResponseDto>>(pagedReviews);
 
-            var userIds = reviewDtos.Select(r => r.UserId).Distinct().ToList();
-            var userNames = await _userApiClient.GetUserNamesByIdsAsync(userIds, cancellationToken);
-
-            foreach (var review in reviewDtos)
-            {
-                if (userNames.TryGetValue(review.UserId, out var userName))
-                {
-                    review.UserName = userName;
-                }
-            }
+            await EnrichReviewsWithUserNamesAsync(reviewDtos, cancellationToken);
+            await EnrichReviewsWithProductNamesAsync(reviewDtos, cancellationToken);
 
             return new PagedList<ReviewResponseDto>(
-                reviewDtos.ToList(),
+                reviewDtos,
                 pagedReviews.TotalCount,
                 pagedReviews.CurrentPage,
                 pagedReviews.PageSize);
@@ -127,18 +126,13 @@ namespace KosherClouds.ReviewService.Services
                 .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.Id == reviewId, cancellationToken);
 
-            var reviewDto = _mapper.Map<ReviewResponseDto?>(review);
+            if (review == null)
+                return null;
 
-            if (reviewDto != null)
-            {
-                var user = await _userApiClient.GetUserByIdAsync(reviewDto.UserId, cancellationToken);
-                if (user != null)
-                {
-                    reviewDto.UserName = !string.IsNullOrWhiteSpace(user.FirstName) && !string.IsNullOrWhiteSpace(user.LastName)
-                        ? $"{user.FirstName} {user.LastName}"
-                        : user.UserName ?? "Unknown User";
-                }
-            }
+            var reviewDto = _mapper.Map<ReviewResponseDto>(review);
+
+            await EnrichReviewsWithUserNamesAsync(new List<ReviewResponseDto> { reviewDto }, cancellationToken);
+            await EnrichReviewsWithProductNamesAsync(new List<ReviewResponseDto> { reviewDto }, cancellationToken);
 
             return reviewDto;
         }
@@ -147,14 +141,9 @@ namespace KosherClouds.ReviewService.Services
             Guid userId,
             CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation(
-                "Getting orders to review for user {UserId}",
-                userId);
+            _logger.LogInformation("Getting orders to review for user {UserId}", userId);
 
-            var orders = await _orderApiClient.GetPaidOrdersForUserAsync(
-                userId,
-                ReviewPeriodDays,
-                cancellationToken);
+            var orders = await _orderApiClient.GetPaidOrdersForUserAsync(userId, ReviewPeriodDays, cancellationToken);
 
             if (!orders.Any())
             {
@@ -162,41 +151,45 @@ namespace KosherClouds.ReviewService.Services
                 return new List<OrderToReviewDto>();
             }
 
+            var orderIds = orders.Select(o => o.Id).ToList();
+            var existingReviews = await _dbContext.Reviews
+                .Where(r => orderIds.Contains(r.OrderId) && r.UserId == userId)
+                .ToListAsync(cancellationToken);
+
             var result = new List<OrderToReviewDto>();
 
             foreach (var order in orders)
             {
-                var existingReviews = await _dbContext.Reviews
-                    .Where(r => r.OrderId == order.Id && r.UserId == userId)
-                    .Select(r => new { r.ProductId, r.Id })
-                    .ToListAsync(cancellationToken);
+                var orderReviews = existingReviews.Where(r => r.OrderId == order.Id).ToList();
+                var orderReview = orderReviews.FirstOrDefault(r => r.ReviewType == ReviewType.Order);
 
                 var reviewableProducts = order.Items.Select(item => new ReviewableProductDto
                 {
                     ProductId = item.ProductId,
                     ProductName = item.ProductNameSnapshot,
-                    HasReview = existingReviews.Any(r => r.ProductId == item.ProductId),
-                    ExistingReviewId = existingReviews
-                        .FirstOrDefault(r => r.ProductId == item.ProductId)?.Id
+                    ProductNameUk = item.ProductNameSnapshotUk,
+                    Price = item.UnitPriceSnapshot,
+                    Quantity = item.Quantity,
+                    AlreadyReviewed = orderReviews.Any(r => r.ReviewType == ReviewType.Product && r.ProductId == item.ProductId),
+                    ExistingReviewId = orderReviews.FirstOrDefault(r => r.ReviewType == ReviewType.Product && r.ProductId == item.ProductId)?.Id
                 }).ToList();
 
-                var daysLeft = ReviewPeriodDays -
-                    (int)(DateTimeOffset.UtcNow - order.CreatedAt).TotalDays;
+                var daysLeft = ReviewPeriodDays - (int)(DateTimeOffset.UtcNow - order.CreatedAt).TotalDays;
 
                 result.Add(new OrderToReviewDto
                 {
                     OrderId = order.Id,
                     OrderDate = order.CreatedAt,
                     TotalAmount = order.TotalAmount,
+                    OrderReviewExists = orderReview != null,
+                    OrderReviewId = orderReview?.Id,
                     Products = reviewableProducts,
-                    ReviewableProductsCount = reviewableProducts.Count(p => !p.HasReview),
+                    ReviewableProductsCount = reviewableProducts.Count(p => !p.AlreadyReviewed),
                     DaysLeftToReview = Math.Max(0, daysLeft)
                 });
             }
 
-            _logger.LogInformation(
-                "Found {Count} orders to review for user {UserId}",
-                result.Count, userId);
+            _logger.LogInformation("Found {Count} orders to review for user {UserId}", result.Count, userId);
 
             return result;
         }
@@ -206,9 +199,7 @@ namespace KosherClouds.ReviewService.Services
             Guid userId,
             CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation(
-                "Getting reviewable products for order {OrderId} and user {UserId}",
-                orderId, userId);
+            _logger.LogInformation("Getting reviewable products for order {OrderId} and user {UserId}", orderId, userId);
 
             var order = await _orderApiClient.GetOrderByIdAsync(orderId, cancellationToken);
 
@@ -223,11 +214,10 @@ namespace KosherClouds.ReviewService.Services
 
             var reviewDeadline = order.CreatedAt.AddDays(ReviewPeriodDays);
             if (DateTimeOffset.UtcNow > reviewDeadline)
-                throw new InvalidOperationException(
-                    $"Review period has expired ({ReviewPeriodDays} days)");
+                throw new InvalidOperationException($"Review period has expired ({ReviewPeriodDays} days)");
 
             var existingReviews = await _dbContext.Reviews
-                .Where(r => r.OrderId == orderId && r.UserId == userId)
+                .Where(r => r.OrderId == orderId && r.UserId == userId && r.ReviewType == ReviewType.Product)
                 .Select(r => new { r.ProductId, r.Id })
                 .ToListAsync(cancellationToken);
 
@@ -235,14 +225,14 @@ namespace KosherClouds.ReviewService.Services
             {
                 ProductId = item.ProductId,
                 ProductName = item.ProductNameSnapshot,
-                HasReview = existingReviews.Any(r => r.ProductId == item.ProductId),
-                ExistingReviewId = existingReviews
-                    .FirstOrDefault(r => r.ProductId == item.ProductId)?.Id
+                ProductNameUk = item.ProductNameSnapshotUk,
+                Price = item.UnitPriceSnapshot,
+                Quantity = item.Quantity,
+                AlreadyReviewed = existingReviews.Any(r => r.ProductId == item.ProductId),
+                ExistingReviewId = existingReviews.FirstOrDefault(r => r.ProductId == item.ProductId)?.Id
             }).ToList();
 
-            _logger.LogInformation(
-                "Found {Count} reviewable products for order {OrderId}",
-                result.Count, orderId);
+            _logger.LogInformation("Found {Count} reviewable products for order {OrderId}", result.Count, orderId);
 
             return result;
         }
@@ -252,9 +242,7 @@ namespace KosherClouds.ReviewService.Services
             ReviewCreateDto dto,
             CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation(
-                "Creating review for Product {ProductId} in Order {OrderId} by User {UserId}",
-                dto.ProductId, dto.OrderId, userId);
+            _logger.LogInformation("Creating {ReviewType} review for Order {OrderId} by User {UserId}", dto.ReviewType, dto.OrderId, userId);
 
             var order = await _orderApiClient.GetOrderByIdAsync(dto.OrderId, cancellationToken);
             if (order == null)
@@ -268,20 +256,33 @@ namespace KosherClouds.ReviewService.Services
 
             var reviewDeadline = order.CreatedAt.AddDays(ReviewPeriodDays);
             if (DateTimeOffset.UtcNow > reviewDeadline)
-                throw new InvalidOperationException(
-                    $"Review period has expired ({ReviewPeriodDays} days)");
+                throw new InvalidOperationException($"Review period has expired ({ReviewPeriodDays} days)");
 
-            if (!order.Items.Any(i => i.ProductId == dto.ProductId))
-                throw new InvalidOperationException("This product was not in your order");
+            if (dto.ReviewType == ReviewType.Order)
+            {
+                if (dto.ProductId.HasValue)
+                    throw new InvalidOperationException("Order reviews cannot have ProductId");
 
-            var existingReview = await _dbContext.Reviews
-                .AnyAsync(r => r.OrderId == dto.OrderId
-                            && r.ProductId == dto.ProductId
-                            && r.UserId == userId,
-                          cancellationToken);
+                var existingOrderReview = await _dbContext.Reviews
+                    .AnyAsync(r => r.OrderId == dto.OrderId && r.UserId == userId && r.ReviewType == ReviewType.Order, cancellationToken);
 
-            if (existingReview)
-                throw new InvalidOperationException("You already reviewed this product in this order");
+                if (existingOrderReview)
+                    throw new InvalidOperationException("You already reviewed this order");
+            }
+            else if (dto.ReviewType == ReviewType.Product)
+            {
+                if (!dto.ProductId.HasValue)
+                    throw new InvalidOperationException("ProductId is required for product reviews");
+
+                if (!order.Items.Any(i => i.ProductId == dto.ProductId.Value))
+                    throw new InvalidOperationException("This product was not in your order");
+
+                var existingProductReview = await _dbContext.Reviews
+                    .AnyAsync(r => r.OrderId == dto.OrderId && r.ProductId == dto.ProductId.Value && r.UserId == userId && r.ReviewType == ReviewType.Product, cancellationToken);
+
+                if (existingProductReview)
+                    throw new InvalidOperationException("You already reviewed this product in this order");
+            }
 
             var review = _mapper.Map<Review>(dto);
             review.UserId = userId;
@@ -293,16 +294,23 @@ namespace KosherClouds.ReviewService.Services
 
             _logger.LogInformation("Review {ReviewId} created successfully", review.Id);
 
-            await _publishEndpoint.Publish(new ReviewCreatedEvent
+            if (review.ReviewType == ReviewType.Product && review.ProductId.HasValue)
             {
-                ReviewId = review.Id,
-                ProductId = review.ProductId,
-                UserId = review.UserId,
-                Rating = review.Rating,
-                CreatedAt = review.CreatedAt
-            }, cancellationToken);
+                await _publishEndpoint.Publish(new ReviewCreatedEvent
+                {
+                    ReviewId = review.Id,
+                    ProductId = review.ProductId.Value,
+                    UserId = review.UserId,
+                    Rating = review.Rating,
+                    CreatedAt = review.CreatedAt
+                }, cancellationToken);
+            }
 
-            return _mapper.Map<ReviewResponseDto>(review);
+            var result = _mapper.Map<ReviewResponseDto>(review);
+            await EnrichReviewsWithUserNamesAsync(new List<ReviewResponseDto> { result }, cancellationToken);
+            await EnrichReviewsWithProductNamesAsync(new List<ReviewResponseDto> { result }, cancellationToken);
+
+            return result;
         }
 
         public async Task<ReviewResponseDto> UpdateReviewAsync(
@@ -311,12 +319,9 @@ namespace KosherClouds.ReviewService.Services
             ReviewUpdateDto dto,
             CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation(
-                "Updating review {ReviewId} by user {UserId}",
-                reviewId, userId);
+            _logger.LogInformation("Updating review {ReviewId} by user {UserId}", reviewId, userId);
 
-            var review = await _dbContext.Reviews
-                .FirstOrDefaultAsync(r => r.Id == reviewId, cancellationToken);
+            var review = await _dbContext.Reviews.FirstOrDefaultAsync(r => r.Id == reviewId, cancellationToken);
 
             if (review == null)
                 throw new KeyNotFoundException("Review not found");
@@ -332,8 +337,7 @@ namespace KosherClouds.ReviewService.Services
 
             var updateDeadline = review.CreatedAt.AddDays(ReviewPeriodDays);
             if (DateTimeOffset.UtcNow > updateDeadline)
-                throw new InvalidOperationException(
-                    $"Review can only be updated within {ReviewPeriodDays} days after creation");
+                throw new InvalidOperationException($"Review can only be updated within {ReviewPeriodDays} days after creation");
 
             var oldRating = review.Rating;
 
@@ -349,19 +353,23 @@ namespace KosherClouds.ReviewService.Services
 
             _logger.LogInformation("Review {ReviewId} updated successfully", reviewId);
 
-            if (oldRating != review.Rating)
+            if (review.ReviewType == ReviewType.Product && review.ProductId.HasValue && oldRating != review.Rating)
             {
                 await _publishEndpoint.Publish(new ReviewUpdatedEvent
                 {
                     ReviewId = review.Id,
-                    ProductId = review.ProductId,
+                    ProductId = review.ProductId.Value,
                     OldRating = oldRating,
                     NewRating = review.Rating,
                     UpdatedAt = review.UpdatedAt.Value
                 }, cancellationToken);
             }
 
-            return _mapper.Map<ReviewResponseDto>(review);
+            var result = _mapper.Map<ReviewResponseDto>(review);
+            await EnrichReviewsWithUserNamesAsync(new List<ReviewResponseDto> { result }, cancellationToken);
+            await EnrichReviewsWithProductNamesAsync(new List<ReviewResponseDto> { result }, cancellationToken);
+
+            return result;
         }
 
         public async Task SoftDeleteReviewAsync(
@@ -370,12 +378,9 @@ namespace KosherClouds.ReviewService.Services
             bool isAdmin,
             CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation(
-                "Soft deleting review {ReviewId} by user {UserId} (isAdmin: {IsAdmin})",
-                reviewId, userId, isAdmin);
+            _logger.LogInformation("Soft deleting review {ReviewId} by user {UserId} (isAdmin: {IsAdmin})", reviewId, userId, isAdmin);
 
-            var review = await _dbContext.Reviews
-                .FirstOrDefaultAsync(r => r.Id == reviewId, cancellationToken);
+            var review = await _dbContext.Reviews.FirstOrDefaultAsync(r => r.Id == reviewId, cancellationToken);
 
             if (review == null)
                 throw new KeyNotFoundException("Review not found");
@@ -394,51 +399,58 @@ namespace KosherClouds.ReviewService.Services
 
             _logger.LogInformation("Review {ReviewId} soft deleted", reviewId);
 
-            await _publishEndpoint.Publish(new ReviewDeletedEvent
+            if (review.ReviewType == ReviewType.Product && review.ProductId.HasValue)
             {
-                ReviewId = review.Id,
-                ProductId = review.ProductId,
-                Rating = review.Rating,
-                DeletedAt = review.UpdatedAt.Value
-            }, cancellationToken);
+                await _publishEndpoint.Publish(new ReviewDeletedEvent
+                {
+                    ReviewId = review.Id,
+                    ProductId = review.ProductId.Value,
+                    Rating = review.Rating,
+                    DeletedAt = review.UpdatedAt.Value
+                }, cancellationToken);
 
-            await _publishEndpoint.Publish(new ReviewStatusChangedEvent
-            {
-                ReviewId = review.Id,
-                ProductId = review.ProductId,
-                Rating = review.Rating,
-                OldStatus = oldStatus,
-                NewStatus = ReviewStatus.Deleted.ToString(),
-                ChangedAt = review.UpdatedAt.Value
-            }, cancellationToken);
+                await _publishEndpoint.Publish(new ReviewStatusChangedEvent
+                {
+                    ReviewId = review.Id,
+                    ProductId = review.ProductId.Value,
+                    Rating = review.Rating,
+                    OldStatus = oldStatus,
+                    NewStatus = ReviewStatus.Deleted.ToString(),
+                    ChangedAt = review.UpdatedAt.Value
+                }, cancellationToken);
+            }
         }
 
         public async Task DeleteReviewAsync(
             Guid reviewId,
             CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation(
-                "Hard deleting review {ReviewId} by Admin",
-                reviewId);
+            _logger.LogInformation("Hard deleting review {ReviewId} by Admin", reviewId);
 
-            var review = await _dbContext.Reviews
-                .FirstOrDefaultAsync(r => r.Id == reviewId, cancellationToken);
+            var review = await _dbContext.Reviews.FirstOrDefaultAsync(r => r.Id == reviewId, cancellationToken);
 
             if (review == null)
                 throw new KeyNotFoundException("Review not found");
+
+            var productId = review.ProductId;
+            var rating = review.Rating;
+            var reviewType = review.ReviewType;
 
             _dbContext.Reviews.Remove(review);
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Review {ReviewId} permanently deleted", reviewId);
 
-            await _publishEndpoint.Publish(new ReviewDeletedEvent
+            if (reviewType == ReviewType.Product && productId.HasValue)
             {
-                ReviewId = review.Id,
-                ProductId = review.ProductId,
-                Rating = review.Rating,
-                DeletedAt = DateTimeOffset.UtcNow
-            }, cancellationToken);
+                await _publishEndpoint.Publish(new ReviewDeletedEvent
+                {
+                    ReviewId = reviewId,
+                    ProductId = productId.Value,
+                    Rating = rating,
+                    DeletedAt = DateTimeOffset.UtcNow
+                }, cancellationToken);
+            }
         }
 
         public async Task ModerateReviewAsync(
@@ -447,12 +459,9 @@ namespace KosherClouds.ReviewService.Services
             ReviewModerationDto dto,
             CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation(
-                "Moderating review {ReviewId} by moderator {ModeratorId}. Action: {Action}",
-                reviewId, moderatorId, dto.Action);
+            _logger.LogInformation("Moderating review {ReviewId} by moderator {ModeratorId}. Action: {Action}", reviewId, moderatorId, dto.Action);
 
-            var review = await _dbContext.Reviews
-                .FirstOrDefaultAsync(r => r.Id == reviewId, cancellationToken);
+            var review = await _dbContext.Reviews.FirstOrDefaultAsync(r => r.Id == reviewId, cancellationToken);
 
             if (review == null)
                 throw new KeyNotFoundException("Review not found");
@@ -474,9 +483,7 @@ namespace KosherClouds.ReviewService.Services
                     review.ModeratedAt = DateTimeOffset.UtcNow;
                     review.UpdatedAt = DateTimeOffset.UtcNow;
 
-                    _logger.LogInformation(
-                        "Review {ReviewId} hidden by moderator {ModeratorId}",
-                        reviewId, moderatorId);
+                    _logger.LogInformation("Review {ReviewId} hidden by moderator {ModeratorId}", reviewId, moderatorId);
                     break;
 
                 case "publish":
@@ -489,31 +496,85 @@ namespace KosherClouds.ReviewService.Services
                     review.ModeratedAt = DateTimeOffset.UtcNow;
                     review.UpdatedAt = DateTimeOffset.UtcNow;
 
-                    _logger.LogInformation(
-                        "Review {ReviewId} published by moderator {ModeratorId}",
-                        reviewId, moderatorId);
+                    _logger.LogInformation("Review {ReviewId} published by moderator {ModeratorId}", reviewId, moderatorId);
                     break;
 
                 default:
-                    throw new InvalidOperationException(
-                        $"Invalid moderation action: {dto.Action}. Use 'Hide' or 'Publish'");
+                    throw new InvalidOperationException($"Invalid moderation action: {dto.Action}. Use 'Hide' or 'Publish'");
             }
 
             await _dbContext.SaveChangesAsync(cancellationToken);
 
-            await _publishEndpoint.Publish(new ReviewStatusChangedEvent
+            if (review.ReviewType == ReviewType.Product && review.ProductId.HasValue)
             {
-                ReviewId = review.Id,
-                ProductId = review.ProductId,
-                Rating = review.Rating,
-                OldStatus = oldStatus,
-                NewStatus = review.Status.ToString(),
-                ChangedAt = review.UpdatedAt.Value
-            }, cancellationToken);
+                await _publishEndpoint.Publish(new ReviewStatusChangedEvent
+                {
+                    ReviewId = review.Id,
+                    ProductId = review.ProductId.Value,
+                    Rating = review.Rating,
+                    OldStatus = oldStatus,
+                    NewStatus = review.Status.ToString(),
+                    ChangedAt = review.UpdatedAt.Value
+                }, cancellationToken);
+            }
 
-            _logger.LogInformation(
-                "Review {ReviewId} moderation completed. Status changed from {OldStatus} to {NewStatus}",
-                reviewId, oldStatus, review.Status);
+            _logger.LogInformation("Review {ReviewId} moderation completed. Status changed from {OldStatus} to {NewStatus}", reviewId, oldStatus, review.Status);
+        }
+
+        private async Task EnrichReviewsWithUserNamesAsync(
+            List<ReviewResponseDto> reviews,
+            CancellationToken cancellationToken)
+        {
+            if (!reviews.Any())
+                return;
+
+            var userIds = reviews.Select(r => r.UserId).Distinct().ToList();
+            var userNames = await _userApiClient.GetUserNamesByIdsAsync(userIds, cancellationToken);
+
+            foreach (var review in reviews)
+            {
+                if (userNames.TryGetValue(review.UserId, out var userName))
+                {
+                    review.UserName = userName;
+                }
+            }
+        }
+
+        private async Task EnrichReviewsWithProductNamesAsync(
+            List<ReviewResponseDto> reviews,
+            CancellationToken cancellationToken)
+        {
+            if (!reviews.Any())
+                return;
+
+            var productReviews = reviews.Where(r => r.ProductId.HasValue).ToList();
+            if (!productReviews.Any())
+                return;
+
+            var orderIds = productReviews.Select(r => r.OrderId).Distinct().ToList();
+            var ordersDict = new Dictionary<Guid, OrderDto>();
+
+            foreach (var orderId in orderIds)
+            {
+                var order = await _orderApiClient.GetOrderByIdAsync(orderId, cancellationToken);
+                if (order != null)
+                {
+                    ordersDict[orderId] = order;
+                }
+            }
+
+            foreach (var review in productReviews)
+            {
+                if (ordersDict.TryGetValue(review.OrderId, out var order))
+                {
+                    var orderItem = order.Items.FirstOrDefault(i => i.ProductId == review.ProductId!.Value);
+                    if (orderItem != null)
+                    {
+                        review.ProductName = orderItem.ProductNameSnapshot;
+                        review.ProductNameUk = orderItem.ProductNameSnapshotUk;
+                    }
+                }
+            }
         }
     }
 }

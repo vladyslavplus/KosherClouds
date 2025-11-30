@@ -24,10 +24,17 @@ namespace KosherClouds.ReviewService.Controllers
         [HttpGet]
         [AllowAnonymous]
         [ProducesResponseType(typeof(PagedList<ReviewResponseDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetReviews(
             [FromQuery] ReviewParameters parameters,
             CancellationToken cancellationToken)
         {
+            if (!parameters.IsValidRatingRange)
+                return BadRequest(new { message = "Invalid rating range" });
+
+            if (!parameters.IsValidDateRange)
+                return BadRequest(new { message = "Invalid date range" });
+
             var reviews = await _reviewService.GetReviewsAsync(parameters, cancellationToken);
 
             Response.Headers["X-Pagination"] = JsonSerializer.Serialize(new

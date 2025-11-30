@@ -30,134 +30,18 @@ namespace KosherClouds.ReviewService.Data.Seed
 
             var reviews = new List<Review>
             {
+                // ============================================
+                // ORDER 1 - User: 1 Order Review + 12 Product Reviews
+                // ============================================
                 new Review
                 {
                     Id = Guid.NewGuid(),
                     OrderId = SharedSeedData.Order1Id,
-                    ProductId = SharedSeedData.ProductKugelId,
+                    ProductId = null,
+                    ReviewType = ReviewType.Order,
                     UserId = SharedSeedData.UserId,
                     Rating = 5,
-                    Comment = "Amazing dish! Best Kugel I've ever tasted. Will definitely order again!",
-                    IsVerifiedPurchase = true,
-                    Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(2),
-                    UpdatedAt = null
-                },
-                new Review
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order2Id,
-                    ProductId = SharedSeedData.ProductKugelId,
-                    UserId = SharedSeedData.ManagerId,
-                    Rating = 5,
-                    Comment = "Perfectly cooked, traditional taste. Reminded me of my grandmother's recipe.",
-                    IsVerifiedPurchase = true,
-                    Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(5),
-                    UpdatedAt = null
-                },
-                new Review
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order3Id,
-                    ProductId = SharedSeedData.ProductKugelId,
-                    UserId = SharedSeedData.AdminId,
-                    Rating = 4,
-                    Comment = "Very good, but could use a bit more seasoning for my taste.",
-                    IsVerifiedPurchase = true,
-                    Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(8),
-                    UpdatedAt = null
-                },
-
-                new Review
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order1Id,
-                    ProductId = SharedSeedData.ProductFalafelSetId,
-                    UserId = SharedSeedData.UserId,
-                    Rating = 4,
-                    Comment = "Great falafel set, very fresh and flavorful. Just wish the portion was a bit larger.",
-                    IsVerifiedPurchase = true,
-                    Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(3),
-                    UpdatedAt = null
-                },
-                new Review
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order2Id,
-                    ProductId = SharedSeedData.ProductFalafelSetId,
-                    UserId = SharedSeedData.ManagerId,
-                    Rating = 5,
-                    Comment = "Best falafel in town! Crispy outside, soft inside. The tahini sauce is perfect!",
-                    IsVerifiedPurchase = true,
-                    Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(7),
-                    UpdatedAt = null
-                },
-                new Review
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order3Id,
-                    ProductId = SharedSeedData.ProductFalafelSetId,
-                    UserId = SharedSeedData.AdminId,
-                    Rating = 5,
-                    Comment = "Excellent vegetarian option. Very filling and delicious!",
-                    IsVerifiedPurchase = true,
-                    Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(12),
-                    UpdatedAt = null
-                },
-
-                new Review
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order2Id,
-                    ProductId = SharedSeedData.ProductHookahTropicalId,
-                    UserId = SharedSeedData.ManagerId,
-                    Rating = 5,
-                    Comment = "Excellent hookah experience! Tropical flavors are perfectly balanced and smooth.",
-                    IsVerifiedPurchase = true,
-                    Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(4),
-                    UpdatedAt = null
-                },
-                new Review
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order1Id,
-                    ProductId = SharedSeedData.ProductHookahTropicalId,
-                    UserId = SharedSeedData.UserId,
-                    Rating = 5,
-                    Comment = "Love the mango and passion fruit combination. Very refreshing!",
-                    IsVerifiedPurchase = true,
-                    Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(9),
-                    UpdatedAt = null
-                },
-                new Review
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order3Id,
-                    ProductId = SharedSeedData.ProductHookahTropicalId,
-                    UserId = SharedSeedData.AdminId,
-                    Rating = 4,
-                    Comment = "Great flavor, though I prefer stronger tobacco. Still very good!",
-                    IsVerifiedPurchase = true,
-                    Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(15),
-                    UpdatedAt = null
-                },
-
-                new Review
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order1Id,
-                    ProductId = SharedSeedData.ProductHummusId,
-                    UserId = SharedSeedData.UserId,
-                    Rating = 5,
-                    Comment = "Creamy and perfectly seasoned. Best hummus I've had!",
+                    Comment = "Amazing experience! Everything was perfect - food quality, service, and atmosphere. Will definitely order again!",
                     IsVerifiedPurchase = true,
                     Status = ReviewStatus.Published,
                     CreatedAt = baseDate.AddDays(1),
@@ -166,92 +50,12 @@ namespace KosherClouds.ReviewService.Data.Seed
                 new Review
                 {
                     Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order2Id,
-                    ProductId = SharedSeedData.ProductHummusId,
-                    UserId = SharedSeedData.ManagerId,
-                    Rating = 5,
-                    Comment = "Authentic taste, great texture. Perfect with pita bread!",
-                    IsVerifiedPurchase = true,
-                    Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(6),
-                    UpdatedAt = null
-                },
-
-                new Review
-                {
-                    Id = Guid.NewGuid(),
                     OrderId = SharedSeedData.Order1Id,
-                    ProductId = SharedSeedData.ProductShakshukaId,
+                    ProductId = SharedSeedData.ProductKugelId,
+                    ReviewType = ReviewType.Product,
                     UserId = SharedSeedData.UserId,
                     Rating = 5,
-                    Comment = "Perfect for breakfast! Eggs were cooked just right, sauce was amazing.",
-                    IsVerifiedPurchase = true,
-                    Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(3),
-                    UpdatedAt = null
-                },
-                new Review
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order2Id,
-                    ProductId = SharedSeedData.ProductShakshukaId,
-                    UserId = SharedSeedData.ManagerId,
-                    Rating = 5,
-                    Comment = "Spicy and flavorful! This is now my favorite breakfast dish.",
-                    IsVerifiedPurchase = true,
-                    Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(10),
-                    UpdatedAt = null
-                },
-                new Review
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order3Id,
-                    ProductId = SharedSeedData.ProductShakshukaId,
-                    UserId = SharedSeedData.AdminId,
-                    Rating = 4,
-                    Comment = "Very good, but I'd prefer it a bit less spicy. Still delicious!",
-                    IsVerifiedPurchase = true,
-                    Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(14),
-                    UpdatedAt = null
-                },
-
-                new Review
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order1Id,
-                    ProductId = SharedSeedData.ProductChallengeId,
-                    UserId = SharedSeedData.UserId,
-                    Rating = 5,
-                    Comment = "Soft, sweet, and perfectly braided. Perfect for Shabbat dinner!",
-                    IsVerifiedPurchase = true,
-                    Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(4),
-                    UpdatedAt = null
-                },
-                new Review
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order2Id,
-                    ProductId = SharedSeedData.ProductChallengeId,
-                    UserId = SharedSeedData.ManagerId,
-                    Rating = 5,
-                    Comment = "Traditional and delicious. Stays fresh for days!",
-                    IsVerifiedPurchase = true,
-                    Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(11),
-                    UpdatedAt = null
-                },
-
-                new Review
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order1Id,
-                    ProductId = SharedSeedData.ProductMatzoSoupId,
-                    UserId = SharedSeedData.UserId,
-                    Rating = 5,
-                    Comment = "Comforting and delicious! The matzo balls were so fluffy.",
+                    Comment = "Amazing dish! Best Kugel I've ever tasted.",
                     IsVerifiedPurchase = true,
                     Status = ReviewStatus.Published,
                     CreatedAt = baseDate.AddDays(2),
@@ -260,25 +64,40 @@ namespace KosherClouds.ReviewService.Data.Seed
                 new Review
                 {
                     Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order3Id,
-                    ProductId = SharedSeedData.ProductMatzoSoupId,
-                    UserId = SharedSeedData.AdminId,
+                    OrderId = SharedSeedData.Order1Id,
+                    ProductId = SharedSeedData.ProductFalafelSetId,
+                    ReviewType = ReviewType.Product,
+                    UserId = SharedSeedData.UserId,
                     Rating = 4,
-                    Comment = "Very good soup, reminds me of home. Could use more vegetables though.",
+                    Comment = "Great falafel set, very fresh and flavorful.",
                     IsVerifiedPurchase = true,
                     Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(13),
+                    CreatedAt = baseDate.AddDays(3),
                     UpdatedAt = null
                 },
-
                 new Review
                 {
                     Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order2Id,
-                    ProductId = SharedSeedData.ProductBrisketId,
-                    UserId = SharedSeedData.ManagerId,
+                    OrderId = SharedSeedData.Order1Id,
+                    ProductId = SharedSeedData.ProductHookahTropicalId,
+                    ReviewType = ReviewType.Product,
+                    UserId = SharedSeedData.UserId,
                     Rating = 5,
-                    Comment = "Melt-in-your-mouth tender! Best brisket I've ever had. Worth every penny!",
+                    Comment = "Love the mango and passion fruit combination!",
+                    IsVerifiedPurchase = true,
+                    Status = ReviewStatus.Published,
+                    CreatedAt = baseDate.AddDays(4),
+                    UpdatedAt = null
+                },
+                new Review
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = SharedSeedData.Order1Id,
+                    ProductId = SharedSeedData.ProductHummusId,
+                    ReviewType = ReviewType.Product,
+                    UserId = SharedSeedData.UserId,
+                    Rating = 5,
+                    Comment = "Creamy and perfectly seasoned. Best hummus!",
                     IsVerifiedPurchase = true,
                     Status = ReviewStatus.Published,
                     CreatedAt = baseDate.AddDays(5),
@@ -287,25 +106,142 @@ namespace KosherClouds.ReviewService.Data.Seed
                 new Review
                 {
                     Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order3Id,
-                    ProductId = SharedSeedData.ProductBrisketId,
-                    UserId = SharedSeedData.AdminId,
+                    OrderId = SharedSeedData.Order1Id,
+                    ProductId = SharedSeedData.ProductShakshukaId,
+                    ReviewType = ReviewType.Product,
+                    UserId = SharedSeedData.UserId,
                     Rating = 5,
-                    Comment = "Incredible! Slow-cooked to perfection with amazing flavor.",
+                    Comment = "Perfect for breakfast! Eggs were cooked just right.",
                     IsVerifiedPurchase = true,
                     Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(16),
+                    CreatedAt = baseDate.AddDays(6),
                     UpdatedAt = null
                 },
-
+                new Review
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = SharedSeedData.Order1Id,
+                    ProductId = SharedSeedData.ProductChallengeId,
+                    ReviewType = ReviewType.Product,
+                    UserId = SharedSeedData.UserId,
+                    Rating = 5,
+                    Comment = "Soft, sweet, and perfectly braided!",
+                    IsVerifiedPurchase = true,
+                    Status = ReviewStatus.Published,
+                    CreatedAt = baseDate.AddDays(7),
+                    UpdatedAt = null
+                },
+                new Review
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = SharedSeedData.Order1Id,
+                    ProductId = SharedSeedData.ProductMatzoSoupId,
+                    ReviewType = ReviewType.Product,
+                    UserId = SharedSeedData.UserId,
+                    Rating = 5,
+                    Comment = "Comforting and delicious! Matzo balls were fluffy.",
+                    IsVerifiedPurchase = true,
+                    Status = ReviewStatus.Published,
+                    CreatedAt = baseDate.AddDays(8),
+                    UpdatedAt = null
+                },
                 new Review
                 {
                     Id = Guid.NewGuid(),
                     OrderId = SharedSeedData.Order1Id,
                     ProductId = SharedSeedData.ProductSchnitzelId,
+                    ReviewType = ReviewType.Product,
                     UserId = SharedSeedData.UserId,
                     Rating = 5,
-                    Comment = "Crispy, juicy, and delicious! Served perfectly with lemon.",
+                    Comment = "Crispy, juicy, and delicious!",
+                    IsVerifiedPurchase = true,
+                    Status = ReviewStatus.Published,
+                    CreatedAt = baseDate.AddDays(9),
+                    UpdatedAt = null
+                },
+                new Review
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = SharedSeedData.Order1Id,
+                    ProductId = SharedSeedData.ProductBabkaId,
+                    ReviewType = ReviewType.Product,
+                    UserId = SharedSeedData.UserId,
+                    Rating = 5,
+                    Comment = "Rich, chocolatey, and absolutely delicious!",
+                    IsVerifiedPurchase = true,
+                    Status = ReviewStatus.Published,
+                    CreatedAt = baseDate.AddDays(10),
+                    UpdatedAt = null
+                },
+                new Review
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = SharedSeedData.Order1Id,
+                    ProductId = SharedSeedData.ProductHookahBerryId,
+                    ReviewType = ReviewType.Product,
+                    UserId = SharedSeedData.UserId,
+                    Rating = 5,
+                    Comment = "Sweet berry flavor is amazing!",
+                    IsVerifiedPurchase = true,
+                    Status = ReviewStatus.Published,
+                    CreatedAt = baseDate.AddDays(11),
+                    UpdatedAt = null
+                },
+                new Review
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = SharedSeedData.Order1Id,
+                    ProductId = SharedSeedData.ProductLemonadeId,
+                    ReviewType = ReviewType.Product,
+                    UserId = SharedSeedData.UserId,
+                    Rating = 4,
+                    Comment = "Refreshing and not too sweet!",
+                    IsVerifiedPurchase = true,
+                    Status = ReviewStatus.Published,
+                    CreatedAt = baseDate.AddDays(12),
+                    UpdatedAt = null
+                },
+                new Review
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = SharedSeedData.Order1Id,
+                    ProductId = SharedSeedData.ProductMintTeaId,
+                    ReviewType = ReviewType.Product,
+                    UserId = SharedSeedData.UserId,
+                    Rating = 5,
+                    Comment = "Authentic Moroccan taste!",
+                    IsVerifiedPurchase = true,
+                    Status = ReviewStatus.Published,
+                    CreatedAt = baseDate.AddDays(13),
+                    UpdatedAt = null
+                },
+
+                // ============================================
+                // ORDER 2 - Manager: 0 Order Reviews + 10 Product Reviews
+                // ============================================
+                new Review
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = SharedSeedData.Order2Id,
+                    ProductId = SharedSeedData.ProductKugelId,
+                    ReviewType = ReviewType.Product,
+                    UserId = SharedSeedData.ManagerId,
+                    Rating = 5,
+                    Comment = "Perfectly cooked, traditional taste.",
+                    IsVerifiedPurchase = true,
+                    Status = ReviewStatus.Published,
+                    CreatedAt = baseDate.AddDays(5),
+                    UpdatedAt = null
+                },
+                new Review
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = SharedSeedData.Order2Id,
+                    ProductId = SharedSeedData.ProductFalafelSetId,
+                    ReviewType = ReviewType.Product,
+                    UserId = SharedSeedData.ManagerId,
+                    Rating = 5,
+                    Comment = "Best falafel in town!",
                     IsVerifiedPurchase = true,
                     Status = ReviewStatus.Published,
                     CreatedAt = baseDate.AddDays(7),
@@ -315,24 +251,11 @@ namespace KosherClouds.ReviewService.Data.Seed
                 {
                     Id = Guid.NewGuid(),
                     OrderId = SharedSeedData.Order2Id,
-                    ProductId = SharedSeedData.ProductSchnitzelId,
+                    ProductId = SharedSeedData.ProductHookahTropicalId,
+                    ReviewType = ReviewType.Product,
                     UserId = SharedSeedData.ManagerId,
-                    Rating = 4,
-                    Comment = "Very good schnitzel! Breading was perfect, chicken was tender.",
-                    IsVerifiedPurchase = true,
-                    Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(12),
-                    UpdatedAt = null
-                },
-
-                new Review
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order1Id,
-                    ProductId = SharedSeedData.ProductBabkaId,
-                    UserId = SharedSeedData.UserId,
                     Rating = 5,
-                    Comment = "Rich, chocolatey, and absolutely delicious! Best dessert on the menu!",
+                    Comment = "Excellent hookah experience!",
                     IsVerifiedPurchase = true,
                     Status = ReviewStatus.Published,
                     CreatedAt = baseDate.AddDays(8),
@@ -341,97 +264,117 @@ namespace KosherClouds.ReviewService.Data.Seed
                 new Review
                 {
                     Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order3Id,
-                    ProductId = SharedSeedData.ProductBabkaId,
-                    UserId = SharedSeedData.AdminId,
-                    Rating = 5,
-                    Comment = "Perfect with coffee! The chocolate swirl is amazing.",
-                    IsVerifiedPurchase = true,
-                    Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(17),
-                    UpdatedAt = null
-                },
-
-                new Review
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order1Id,
-                    ProductId = SharedSeedData.ProductHookahBerryId,
-                    UserId = SharedSeedData.UserId,
-                    Rating = 5,
-                    Comment = "Sweet berry flavor is amazing! Very smooth and enjoyable.",
-                    IsVerifiedPurchase = true,
-                    Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(6),
-                    UpdatedAt = null
-                },
-                new Review
-                {
-                    Id = Guid.NewGuid(),
                     OrderId = SharedSeedData.Order2Id,
-                    ProductId = SharedSeedData.ProductHookahBerryId,
+                    ProductId = SharedSeedData.ProductBrisketId,
+                    ReviewType = ReviewType.Product,
                     UserId = SharedSeedData.ManagerId,
-                    Rating = 4,
-                    Comment = "Good flavor combination. A bit light for my preference but still good!",
-                    IsVerifiedPurchase = true,
-                    Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(11),
-                    UpdatedAt = null
-                },
-
-                new Review
-                {
-                    Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order3Id,
-                    ProductId = SharedSeedData.ProductHookahMintId,
-                    UserId = SharedSeedData.AdminId,
                     Rating = 5,
-                    Comment = "Classic mint flavor done perfectly! Strong and refreshing.",
+                    Comment = "Melt-in-your-mouth tender!",
                     IsVerifiedPurchase = true,
                     Status = ReviewStatus.Published,
                     CreatedAt = baseDate.AddDays(9),
                     UpdatedAt = null
                 },
-
                 new Review
                 {
                     Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order1Id,
-                    ProductId = SharedSeedData.ProductLemonadeId,
-                    UserId = SharedSeedData.UserId,
-                    Rating = 4,
-                    Comment = "Refreshing and not too sweet. Perfect summer drink!",
+                    OrderId = SharedSeedData.Order2Id,
+                    ProductId = SharedSeedData.ProductHummusId,
+                    ReviewType = ReviewType.Product,
+                    UserId = SharedSeedData.ManagerId,
+                    Rating = 5,
+                    Comment = "Authentic taste, great texture.",
                     IsVerifiedPurchase = true,
                     Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(5),
+                    CreatedAt = baseDate.AddDays(11),
                     UpdatedAt = null
                 },
-
+                new Review
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = SharedSeedData.Order2Id,
+                    ProductId = SharedSeedData.ProductShakshukaId,
+                    ReviewType = ReviewType.Product,
+                    UserId = SharedSeedData.ManagerId,
+                    Rating = 5,
+                    Comment = "Spicy and flavorful!",
+                    IsVerifiedPurchase = true,
+                    Status = ReviewStatus.Published,
+                    CreatedAt = baseDate.AddDays(12),
+                    UpdatedAt = null
+                },
+                new Review
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = SharedSeedData.Order2Id,
+                    ProductId = SharedSeedData.ProductChallengeId,
+                    ReviewType = ReviewType.Product,
+                    UserId = SharedSeedData.ManagerId,
+                    Rating = 5,
+                    Comment = "Traditional and delicious.",
+                    IsVerifiedPurchase = true,
+                    Status = ReviewStatus.Published,
+                    CreatedAt = baseDate.AddDays(13),
+                    UpdatedAt = null
+                },
+                new Review
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = SharedSeedData.Order2Id,
+                    ProductId = SharedSeedData.ProductSchnitzelId,
+                    ReviewType = ReviewType.Product,
+                    UserId = SharedSeedData.ManagerId,
+                    Rating = 4,
+                    Comment = "Very good schnitzel!",
+                    IsVerifiedPurchase = true,
+                    Status = ReviewStatus.Published,
+                    CreatedAt = baseDate.AddDays(14),
+                    UpdatedAt = null
+                },
+                new Review
+                {
+                    Id = Guid.NewGuid(),
+                    OrderId = SharedSeedData.Order2Id,
+                    ProductId = SharedSeedData.ProductHookahBerryId,
+                    ReviewType = ReviewType.Product,
+                    UserId = SharedSeedData.ManagerId,
+                    Rating = 4,
+                    Comment = "Good flavor combination.",
+                    IsVerifiedPurchase = true,
+                    Status = ReviewStatus.Published,
+                    CreatedAt = baseDate.AddDays(15),
+                    UpdatedAt = null
+                },
                 new Review
                 {
                     Id = Guid.NewGuid(),
                     OrderId = SharedSeedData.Order2Id,
                     ProductId = SharedSeedData.ProductPomegranatJuiceId,
+                    ReviewType = ReviewType.Product,
                     UserId = SharedSeedData.ManagerId,
                     Rating = 5,
-                    Comment = "Fresh and delicious! You can taste the quality.",
+                    Comment = "Fresh and delicious!",
                     IsVerifiedPurchase = true,
                     Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(10),
+                    CreatedAt = baseDate.AddDays(16),
                     UpdatedAt = null
                 },
 
+                // ============================================
+                // ORDER 3 - Admin: 1 Order Review + 0 Product Reviews
+                // ============================================
                 new Review
                 {
                     Id = Guid.NewGuid(),
-                    OrderId = SharedSeedData.Order1Id,
-                    ProductId = SharedSeedData.ProductMintTeaId,
-                    UserId = SharedSeedData.UserId,
-                    Rating = 5,
-                    Comment = "Authentic Moroccan taste! The mint is so fresh and aromatic.",
+                    OrderId = SharedSeedData.Order3Id,
+                    ProductId = null,
+                    ReviewType = ReviewType.Order,
+                    UserId = SharedSeedData.AdminId,
+                    Rating = 4,
+                    Comment = "Good overall experience. Food was tasty and delivery was on time.",
                     IsVerifiedPurchase = true,
                     Status = ReviewStatus.Published,
-                    CreatedAt = baseDate.AddDays(4),
+                    CreatedAt = baseDate.AddDays(10),
                     UpdatedAt = null
                 }
             };
@@ -441,25 +384,31 @@ namespace KosherClouds.ReviewService.Data.Seed
 
             logger.LogInformation("ReviewSeeder: Successfully seeded {Count} reviews", reviews.Count);
 
-            logger.LogInformation("ReviewSeeder: Publishing ReviewCreatedEvent for each review...");
+            logger.LogInformation("ReviewSeeder: Publishing ReviewCreatedEvent for Product reviews...");
 
+            var publishCount = 0;
             foreach (var review in reviews)
             {
-                await publishEndpoint.Publish(new ReviewCreatedEvent
+                if (review.ReviewType == ReviewType.Product && review.ProductId.HasValue)
                 {
-                    ReviewId = review.Id,
-                    ProductId = review.ProductId,
-                    UserId = review.UserId,
-                    Rating = review.Rating,
-                    CreatedAt = review.CreatedAt
-                });
+                    await publishEndpoint.Publish(new ReviewCreatedEvent
+                    {
+                        ReviewId = review.Id,
+                        ProductId = review.ProductId.Value,
+                        UserId = review.UserId,
+                        Rating = review.Rating,
+                        CreatedAt = review.CreatedAt
+                    });
 
-                logger.LogInformation(
-                    "ReviewSeeder: Published ReviewCreatedEvent for Review {ReviewId}, Product {ProductId}",
-                    review.Id, review.ProductId);
+                    publishCount++;
+
+                    logger.LogInformation(
+                        "ReviewSeeder: Published ReviewCreatedEvent for Review {ReviewId}, Product {ProductId}",
+                        review.Id, review.ProductId);
+                }
             }
 
-            logger.LogInformation("ReviewSeeder: All ReviewCreatedEvents published successfully");
+            logger.LogInformation("ReviewSeeder: Published {Count} ReviewCreatedEvents successfully", publishCount);
         }
     }
 }
