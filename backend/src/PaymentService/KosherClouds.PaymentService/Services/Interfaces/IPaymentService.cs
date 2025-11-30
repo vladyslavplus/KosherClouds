@@ -8,5 +8,9 @@ namespace KosherClouds.PaymentService.Services.Interfaces
             PaymentRequestDto request,
             Guid userId,
             CancellationToken cancellationToken);
+
+        Task HandlePaymentSuccessAsync(
+            string transactionId,
+            CancellationToken cancellationToken);
     }
 }

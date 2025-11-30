@@ -186,16 +186,6 @@ namespace KosherClouds.OrderService.Services
 
             var createdOrder = await CreateDraftOrderAsync(orderDto, cancellationToken);
 
-            try
-            {
-                await _cartApiClient.ClearCartAsync(userId, cancellationToken);
-                _logger.LogInformation("Cart cleared for user {UserId}", userId);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to clear cart for user {UserId}, but order was created", userId);
-            }
-
             _logger.LogInformation(
                 "Order {OrderId} created from cart for user {UserId} with {Count} items",
                 createdOrder.Id, userId, orderItems.Count);
@@ -263,6 +253,16 @@ namespace KosherClouds.OrderService.Services
 
             await _dbContext.SaveChangesAsync(cancellationToken);
 
+            try
+            {
+                await _cartApiClient.ClearCartAsync(userId, cancellationToken);
+                _logger.LogInformation("Cart cleared for user {UserId} after order confirmation", userId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to clear cart for user {UserId}, but order was confirmed", userId);
+            }
+
             if (order.PaymentType == PaymentType.OnPickup)
             {
                 await PublishOrderCreatedEvent(order, cancellationToken);
@@ -298,7 +298,9 @@ namespace KosherClouds.OrderService.Services
 
             await _dbContext.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("Order {OrderId} marked as Paid", orderId);
+            await PublishOrderCreatedEvent(order, cancellationToken);
+
+            _logger.LogInformation("Order {OrderId} marked as Paid and OrderCreatedEvent published", orderId);
         }
 
         public async Task UpdateOrderAsync(

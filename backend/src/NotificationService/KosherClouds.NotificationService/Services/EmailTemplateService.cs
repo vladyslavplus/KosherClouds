@@ -25,11 +25,11 @@ namespace KosherClouds.NotificationService.Services
             {
                 contentBuilder.AppendLine("                <div class='item'>");
                 contentBuilder.AppendLine($"                    <strong>{item.ProductName}</strong><br>");
-                contentBuilder.AppendLine($"                    Quantity: {item.Quantity} × ${item.UnitPrice:F2} = <strong>${item.LineTotal:F2}</strong>");
+                contentBuilder.AppendLine($"                    Quantity: {item.Quantity} × {item.UnitPrice:F2}₴ = <strong>{item.LineTotal:F2}₴</strong>");
                 contentBuilder.AppendLine("                </div>");
             }
 
-            contentBuilder.AppendLine($"                <div class='total'>Total Amount: ${totalAmount:F2}</div>");
+            contentBuilder.AppendLine($"                <div class='total'>Total Amount: {totalAmount:F2}₴</div>");
             contentBuilder.AppendLine("            </div>");
             contentBuilder.AppendLine("            <p>Your order is being prepared and will be ready soon. We'll notify you once it's ready for pickup.</p>");
             contentBuilder.AppendLine("            <p>If you have any questions, please don't hesitate to contact us.</p>");

@@ -20,11 +20,11 @@ namespace KosherClouds.PaymentService.Entities
 
         [Required]
         [MaxLength(50)]
-        public string Provider { get; set; } = "Sandbox"; // Stripe, etc.
+        public string Provider { get; set; } = "Stripe";
 
         [Required]
         [MaxLength(50)]
-        public string Status { get; set; } = "Pending"; // Pending, Completed, Failed
+        public string Status { get; set; } = "Pending"; // Pending, Paid, Failed
 
         [MaxLength(250)]
         public string? TransactionId { get; set; }

@@ -234,7 +234,7 @@ namespace KosherClouds.ReviewService.UnitTests.Services
 
             var parameters = new ReviewParameters
             {
-                Status = ReviewStatus.Hidden,
+                Status = ReviewStatus.Hidden.ToString(),
                 PageNumber = 1,
                 PageSize = 10
             };
