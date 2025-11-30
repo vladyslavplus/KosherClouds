@@ -6,7 +6,10 @@ import { ProfilePage } from './pages/profile'
 import MenuPage from './pages/menu'
 import CartPage from './pages/cart'
 import CheckoutPage from './pages/order/CheckoutPage'
-import ReviewsPage from './pages/review/ReviewsPage'
+import ReviewsPage from './pages/reviews/ReviewsPage'
+import PaymentPage from './pages/payment/PaymentPage'
+import PaymentSuccessPage from './pages/payment/PaymentSuccessPage'
+import ReviewPage from './pages/review/ReviewPage'
 
 function HomePage() {
   return (
@@ -35,7 +38,10 @@ function App() {
         <Route path='/menu' element={<MenuPage />} />
         <Route path='/cart' element={<CartPage />} />
         <Route path='/checkout' element={<CheckoutPage />} />
+        <Route path="/review" element={<ReviewPage />} />
         <Route path="/reviews" element={<ReviewsPage />} />
+        <Route path="/payment" element={<PaymentPage />} />
+        <Route path="/payment-success" element={<PaymentSuccessPage />} />
       </Routes>
       
       <Footer />

@@ -8,6 +8,7 @@ import { ProductFilters } from './components/ProductFilters';
 import { ProductModal } from './components/ProductModal';
 import { Pagination } from '@/shared/ui/Pagination';
 import { Select, SelectOption } from '@/shared/ui/Select';
+import { Input } from '@/shared/ui/Input';
 
 export default function MenuPage() {
   const { t, i18n } = useTranslation();
@@ -26,6 +27,9 @@ export default function MenuPage() {
 
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState('category asc');
+  
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -37,12 +41,13 @@ export default function MenuPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const sortOptions: SelectOption[] = [
-    { value: '', label: t('menu.sortBy') },
+    { value: 'category asc', label: t('menu.sortBy') },
     { value: 'price asc', label: t('menu.priceAsc') },
     { value: 'price desc', label: t('menu.priceDesc') },
     { value: 'name asc', label: t('menu.nameAsc') },
     { value: 'name desc', label: t('menu.nameDesc') },
     { value: 'rating desc', label: t('menu.ratingDesc') },
+    { value: 'rating asc', label: t('menu.ratingAsc') },
   ];
 
   useEffect(() => {
@@ -55,12 +60,22 @@ export default function MenuPage() {
   }, []);
 
   useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
+
+  useEffect(() => {
     fetchProducts();
-  }, [selectedCategory, isVegetarian, isPromotional, selectedSubcategory, sortBy, currentPage, pageSize, isUk]);
+  }, [selectedCategory, isVegetarian, isPromotional, selectedSubcategory, sortBy, debouncedSearchTerm, currentPage, pageSize, isUk]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, isVegetarian, isPromotional, selectedSubcategory, sortBy, pageSize]);
+  }, [selectedCategory, isVegetarian, isPromotional, selectedSubcategory, sortBy, debouncedSearchTerm, pageSize]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -88,6 +103,14 @@ export default function MenuPage() {
 
       if (isPromotional) {
         params.isPromotional = true;
+      }
+
+      if (debouncedSearchTerm.trim()) {
+        if (isUk) {
+          params.nameUk = debouncedSearchTerm.trim();
+        } else {
+          params.name = debouncedSearchTerm.trim();
+        }
       }
 
       const effectiveSortBy = sortBy || 'category asc';
@@ -162,30 +185,46 @@ export default function MenuPage() {
       <div className="border-t-[7px] border-[#4A4F86]" />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex justify-end mb-6">
-          <Select
-            options={sortOptions}
-            value={sortBy}
-            onChange={setSortBy}
-            placeholder={t('menu.sortBy')}
-            rounded="full"
-            iconStroke="#8B6914"
-          />
-        </div>
-
+        
         <div className="flex flex-col lg:flex-row gap-6 items-start">
-          <ProductFilters
-            selectedCategory={selectedCategory}
-            onCategoryChange={handleCategoryChange}
-            isVegetarian={isVegetarian}
-            onVegetarianChange={setIsVegetarian}
-            isPromotional={isPromotional}
-            onPromotionalChange={setIsPromotional}
-            selectedSubcategory={selectedSubcategory}
-            onSubcategoryChange={handleSubcategoryChange}
-          />
+          <div className="w-full lg:w-[280px] shrink-0 lg:mt-[78px]">
+            <ProductFilters
+              selectedCategory={selectedCategory}
+              onCategoryChange={handleCategoryChange}
+              isVegetarian={isVegetarian}
+              onVegetarianChange={setIsVegetarian}
+              isPromotional={isPromotional}
+              onPromotionalChange={setIsPromotional}
+              selectedSubcategory={selectedSubcategory}
+              onSubcategoryChange={handleSubcategoryChange}
+            />
+          </div>
 
           <div className="flex-1 w-full">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+              <div className="w-full sm:w-[280px]">
+                <Input
+                  type="text"
+                  placeholder={t('menu.searchPlaceholder')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  rounded="full"
+                  bordered
+                />
+              </div>
+              
+              <div className="w-full sm:w-auto">
+                <Select
+                  options={sortOptions}
+                  value={sortBy}
+                  onChange={setSortBy}
+                  placeholder={t('menu.sortBy')}
+                  rounded="full"
+                  iconStroke="#8B6914"
+                />
+              </div>
+            </div>
+
             {loading && (
               <div className="text-center py-12">
                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#8B6914] border-t-transparent"></div>

@@ -2,10 +2,15 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ordersApi, OrderResponseDto, PaymentType } from '@/lib/api/orders';
+import { paymentsApi } from '@/lib/api/payments';
 import { useAuthStore } from '@/lib/stores/authStore';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
 import { Select, SelectOption } from '@/shared/ui/Select';
+
+interface CheckoutState {
+  order: OrderResponseDto;
+}
 
 export default function CheckoutPage() {
   const { t, i18n } = useTranslation();
@@ -13,10 +18,14 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
 
-  const [order, setOrder] = useState<OrderResponseDto | null>(null);
+  const state = location.state as CheckoutState | undefined;
+
+  const [order, setOrder] = useState<OrderResponseDto | null>(state?.order ?? null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [processingPayment, setProcessingPayment] = useState(false);
 
   const [contactName, setContactName] = useState('');
   const [contactPhone, setContactPhone] = useState('');
@@ -34,22 +43,18 @@ export default function CheckoutPage() {
       return;
     }
 
-    const stateOrder = location.state?.order as OrderResponseDto | undefined;
-
-    if (stateOrder) {
-      setOrder(stateOrder);
-
-      setContactName(stateOrder.contactName || '');
-      setContactPhone(stateOrder.contactPhone || '');
-
+    if (state?.order) {
+      setOrder(state.order);
+      setContactName(state.order.contactName || '');
+      setContactPhone(state.order.contactPhone || '');
       setLoading(false);
     } else {
       navigate('/cart');
     }
-  }, [isAuthenticated, location.state, navigate]);
+  }, [isAuthenticated, state, navigate]);
 
   const handleConfirmOrder = async () => {
-    if (!order) return;
+    if (!order || !user) return;
 
     if (!contactPhone.trim()) {
       alert(t('checkout.phoneRequired'));
@@ -58,28 +63,82 @@ export default function CheckoutPage() {
 
     setSubmitting(true);
     try {
-      await ordersApi.confirmOrder(order.id, {
+      const confirmedOrder = await ordersApi.confirmOrder(order.id, {
         contactName: contactName.trim(),
         contactPhone: contactPhone.trim(),
         notes: notes.trim() || undefined,
         paymentType: paymentType,
       });
 
-      navigate('/orders', {
-        state: { message: t('checkout.orderConfirmed') }
-      });
+      if (paymentType === PaymentType.Online) {
+        setProcessingPayment(true);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        const uahToUsd = 0.024;
+        const amountInUsd = confirmedOrder.totalAmount * uahToUsd;
+
+        const paymentResponse = await paymentsApi.createPayment({
+          orderId: confirmedOrder.id,
+          amount: amountInUsd,
+          currency: 'usd',
+          receiptEmail: user.email || confirmedOrder.contactEmail,
+        });
+
+        if (paymentResponse.clientSecret) {
+          navigate('/payment', {
+            state: {
+              clientSecret: paymentResponse.clientSecret,
+              orderId: confirmedOrder.id,
+              amount: confirmedOrder.totalAmount,
+              amountUsd: amountInUsd,
+            }
+          });
+        } else {
+          throw new Error('No client secret received');
+        }
+      } else {
+        navigate('/order-success', {
+          state: { orderId: confirmedOrder.id }
+        });
+      }
     } catch (error) {
       console.error('Error confirming order:', error);
       alert(t('checkout.error'));
+      setProcessingPayment(false);
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleBackToCart = async () => {
+    if (order?.status === 'Draft') {
+      try {
+        await ordersApi.deleteDraftOrder(order.id);
+      } catch (error) {
+        console.error('Error deleting draft order:', error);
+      }
+    }
+    navigate('/cart');
   };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F3F4F6]">
         <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#8B6914] border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  if (processingPayment) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F3F4F6]">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-[#8B6914] border-t-transparent mb-4"></div>
+          <h2 className="text-2xl font-playfair font-bold text-[#1A1F3A] mb-2">
+            {t('checkout.processingOrder')}
+          </h2>
+          <p className="text-gray-600">{t('checkout.redirectingToPayment')}</p>
+        </div>
       </div>
     );
   }
@@ -243,6 +302,14 @@ export default function CheckoutPage() {
               >
                 {t('checkout.confirmOrder')}
               </Button>
+
+              <button
+                onClick={handleBackToCart}
+                disabled={submitting || processingPayment}
+                className="w-full mt-4 text-gray-600 hover:text-gray-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {t('checkout.backToCart')}
+              </button>
             </div>
           </div>
         </div>

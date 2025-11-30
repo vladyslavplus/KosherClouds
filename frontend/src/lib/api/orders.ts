@@ -1,16 +1,16 @@
-import { apiClient } from './client';
+import { apiClient } from "./client";
 
 export enum OrderStatus {
-  Draft = 'Draft',
-  Pending = 'Pending',
-  Paid = 'Paid',
-  Completed = 'Completed',
-  Canceled = 'Canceled'
+  Draft = "Draft",
+  Pending = "Pending",
+  Paid = "Paid",
+  Completed = "Completed",
+  Canceled = "Canceled",
 }
 
 export enum PaymentType {
-  OnPickup = 'OnPickup',
-  Online = 'Online'
+  OnPickup = "OnPickup",
+  Online = "Online",
 }
 
 export interface OrderParameters {
@@ -99,10 +99,14 @@ export interface PagedOrderResponse {
 }
 
 export const ordersApi = {
-  getOrders: async (params: OrderParameters = {}): Promise<PagedOrderResponse> => {
-    const response = await apiClient.get<OrderResponseDto[]>('/orders', { params });
-    
-    const paginationHeader = response.headers['x-pagination'];
+  getOrders: async (
+    params: OrderParameters = {}
+  ): Promise<PagedOrderResponse> => {
+    const response = await apiClient.get<OrderResponseDto[]>("/orders", {
+      params,
+    });
+
+    const paginationHeader = response.headers["x-pagination"];
     let pagination: PaginationMetadata;
 
     if (paginationHeader) {
@@ -134,17 +138,27 @@ export const ordersApi = {
   },
 
   getOrderById: async (orderId: string): Promise<OrderResponseDto> => {
-    const response = await apiClient.get<OrderResponseDto>(`/orders/${orderId}`);
+    const response = await apiClient.get<OrderResponseDto>(
+      `/orders/${orderId}`
+    );
     return response.data;
   },
 
   createOrderFromCart: async (): Promise<OrderResponseDto> => {
-    const response = await apiClient.post<OrderResponseDto>('/orders/from-cart');
+    const response = await apiClient.post<OrderResponseDto>(
+      "/orders/from-cart"
+    );
     return response.data;
   },
 
-  confirmOrder: async (orderId: string, data: OrderConfirmDto): Promise<OrderResponseDto> => {
-    const response = await apiClient.put<OrderResponseDto>(`/orders/${orderId}/confirm`, data);
+  confirmOrder: async (
+    orderId: string,
+    data: OrderConfirmDto
+  ): Promise<OrderResponseDto> => {
+    const response = await apiClient.put<OrderResponseDto>(
+      `/orders/${orderId}/confirm`,
+      data
+    );
     return response.data;
   },
 
@@ -155,22 +169,35 @@ export const ordersApi = {
   deleteOrder: async (orderId: string): Promise<void> => {
     await apiClient.delete(`/orders/${orderId}`);
   },
+
+  deleteDraftOrder: async (orderId: string): Promise<void> => {
+    await apiClient.delete(`/orders/${orderId}`);
+  },
 };
 
 export const orderItemsApi = {
-  getItemsByOrderId: async (orderId: string): Promise<OrderItemResponseDto[]> => {
-    const response = await apiClient.get<OrderItemResponseDto[]>(`/order-items/by-order/${orderId}`);
+  getItemsByOrderId: async (
+    orderId: string
+  ): Promise<OrderItemResponseDto[]> => {
+    const response = await apiClient.get<OrderItemResponseDto[]>(
+      `/order-items/by-order/${orderId}`
+    );
     return response.data;
   },
 
   getOrderItemById: async (itemId: string): Promise<OrderItemResponseDto> => {
-    const response = await apiClient.get<OrderItemResponseDto>(`/order-items/${itemId}`);
+    const response = await apiClient.get<OrderItemResponseDto>(
+      `/order-items/${itemId}`
+    );
     return response.data;
   },
 
-  updateOrderItemQuantity: async (itemId: string, newQuantity: number): Promise<void> => {
+  updateOrderItemQuantity: async (
+    itemId: string,
+    newQuantity: number
+  ): Promise<void> => {
     await apiClient.put(`/order-items/${itemId}/quantity`, null, {
-      params: { newQuantity }
+      params: { newQuantity },
     });
   },
 };
