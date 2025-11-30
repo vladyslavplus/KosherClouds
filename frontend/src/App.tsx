@@ -6,6 +6,7 @@ import { ProfilePage } from './pages/profile'
 import MenuPage from './pages/menu'
 import CartPage from './pages/cart'
 import CheckoutPage from './pages/order/CheckoutPage'
+import ReviewsPage from './pages/review/ReviewsPage'
 
 function HomePage() {
   return (
@@ -34,6 +35,7 @@ function App() {
         <Route path='/menu' element={<MenuPage />} />
         <Route path='/cart' element={<CartPage />} />
         <Route path='/checkout' element={<CheckoutPage />} />
+        <Route path="/reviews" element={<ReviewsPage />} />
       </Routes>
       
       <Footer />

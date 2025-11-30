@@ -6,7 +6,7 @@ import { useAuthStore } from '@/lib/stores/authStore';
 import { ProductCard } from './components/ProductCard';
 import { ProductFilters } from './components/ProductFilters';
 import { ProductModal } from './components/ProductModal';
-import { Pagination } from './components/Pagination';
+import { Pagination } from '@/shared/ui/Pagination';
 import { Select, SelectOption } from '@/shared/ui/Select';
 
 export default function MenuPage() {

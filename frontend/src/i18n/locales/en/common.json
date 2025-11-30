@@ -141,5 +141,18 @@
     "confirmOrder": "Confirm Order",
     "orderConfirmed": "Order confirmed successfully!",
     "error": "Error confirming order. Please try again."
+  },
+  "reviews": {
+    "title": "Guest Reviews",
+    "reviewsCount": "reviews",
+    "sortNewest": "Newest",
+    "sortOldest": "Oldest",
+    "sortHighestRating": "Highest Rating",
+    "sortLowestRating": "Lowest Rating",
+    "anonymous": "Anonymous",
+    "product": "Product",
+    "order": "Order",
+    "verifiedPurchase": "Verified Purchase",
+    "noReviews": "No reviews yet"
   }
 }

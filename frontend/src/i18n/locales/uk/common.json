@@ -141,5 +141,18 @@
     "confirmOrder": "Оформити замовлення",
     "orderConfirmed": "Замовлення успішно оформлено!",
     "error": "Помилка при оформленні замовлення. Спробуйте ще раз."
+  },
+  "reviews": {
+    "title": "Відгуки гостей",
+    "reviewsCount": "відгуків",
+    "sortNewest": "Найновіші",
+    "sortOldest": "Найстаріші",
+    "sortHighestRating": "Найвищий рейтинг",
+    "sortLowestRating": "Найнижчий рейтинг",
+    "anonymous": "Анонімний",
+    "product": "Продукт",
+    "order": "Замовлення",
+    "verifiedPurchase": "Підтверджена покупка",
+    "noReviews": "Ще немає відгуків"
   }
 }
