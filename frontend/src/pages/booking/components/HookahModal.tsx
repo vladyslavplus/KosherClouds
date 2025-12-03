@@ -6,6 +6,7 @@ import { Button } from '@/shared/ui/Button';
 import { Select, SelectOption } from '@/shared/ui/Select';
 import { Input } from '@/shared/ui/Input';
 import { LazyImage } from '@/shared/components/LazyImage';
+import CloseIcon from '@/assets/icons/close.svg?react';
 
 interface ExtendedHookahBooking extends HookahBookingDto {
   price: number;
@@ -93,13 +94,30 @@ export const HookahModal = ({ isOpen, onClose, onConfirm }: HookahModalProps) =>
     onClose();
   };
 
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      handleClose();
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
+      onClick={handleBackdropClick}
+    >
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div className="p-6">
-          <h2 className="text-2xl font-semibold mb-6">{t('booking.selectHookah')}</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-semibold">{t('booking.selectHookah')}</h2>
+            <button
+              onClick={handleClose}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <CloseIcon className="w-6 h-6 text-gray-600" />
+            </button>
+          </div>
 
           {loading ? (
             <div className="text-center py-8">{t('common.loading')}</div>

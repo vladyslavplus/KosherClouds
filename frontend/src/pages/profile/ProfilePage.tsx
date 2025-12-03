@@ -7,6 +7,7 @@ import { authApi } from '../../lib/api/auth';
 import { Input } from '../../shared/ui/Input';
 import { Button } from '../../shared/ui/Button';
 import { EditableField } from '@/shared/components/EditableField';
+import { OrdersTab } from './components/OrdersTab';
 
 export function ProfilePage() {
   const { t } = useTranslation();
@@ -168,11 +169,10 @@ export function ProfilePage() {
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
-                  className={`w-full text-left px-4 py-3 font-heading font-semibold text-lg transition-colors mb-2 rounded-lg ${
-                    activeTab === tab.id
+                  className={`w-full text-left px-4 py-3 font-heading font-semibold text-lg transition-colors mb-2 rounded-lg ${activeTab === tab.id
                       ? 'bg-[#1A1F3A] text-white'
                       : 'text-gray-400 hover:bg-gray-100'
-                  }`}
+                    }`}
                 >
                   {tab.label}
                 </button>
@@ -188,11 +188,10 @@ export function ProfilePage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full text-left px-4 py-3 font-heading font-semibold text-xl transition-colors mb-2 ${
-                    activeTab === tab.id
+                  className={`w-full text-left px-4 py-3 font-heading font-semibold text-xl transition-colors mb-2 ${activeTab === tab.id
                       ? 'text-[#000000]'
                       : 'text-gray-400'
-                  }`}
+                    }`}
                 >
                   {tab.label}
                 </button>
@@ -324,13 +323,8 @@ export function ProfilePage() {
                 </div>
               </div>
             )}
-
-            {activeTab === 'orders' && (
-              <div className="max-w-2xl mx-auto">
-                <h2 className="text-2xl font-heading font-bold mb-6">{t('profile.orders')}</h2>
-                <p className="text-gray-600">{t('profile.ordersPlaceholder')}</p>
-              </div>
-            )}
+            
+            {activeTab === 'orders' && <OrdersTab />}
 
             {activeTab === 'bookings' && (
               <div className="max-w-2xl mx-auto">

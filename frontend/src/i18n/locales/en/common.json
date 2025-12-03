@@ -179,7 +179,16 @@
     "product": "Product",
     "order": "Order",
     "verifiedPurchase": "Verified Purchase",
-    "noReviews": "No reviews yet"
+    "noReviews": "No reviews yet",
+    "leaveReview": "Leave Review",
+    "orderReview": "Order Review",
+    "productReviews": "Product Reviews",
+    "rating": "Rating",
+    "comment": "Comment",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "error": "Error submitting review",
+    "allReviewed": "All reviews have been submitted"
   },
   "payment": {
     "title": "Complete Payment",
@@ -253,8 +262,32 @@
       "dateFuture": "Booking date must be in the future"
     }
   },
+  "orders": {
+    "sortBy": {
+      "label": "Sort by",
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "priceDesc": "Price: High to Low",
+      "priceAsc": "Price: Low to High"
+    },
+    "noOrders": "You don't have any orders yet",
+    "orderNumber": "Order",
+    "items": "Items",
+    "status": {
+      "draft": "Draft",
+      "pending": "Pending",
+      "paid": "Paid",
+      "completed": "Completed",
+      "canceled": "Canceled"
+    },
+    "canReviewOrder": "You can leave a review for this order",
+    "canReviewProducts": "Products available for review: {{count}}",
+    "daysLeft": "Days left: {{days}}",
+    "leaveReview": "Leave Review"
+  },
   "common": {
     "loading": "Loading...",
-    "noImage": "No Image"
+    "noImage": "No Image",
+    "close": "Close"
   }
 }

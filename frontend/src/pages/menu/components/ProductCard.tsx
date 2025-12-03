@@ -154,13 +154,11 @@ export const ProductCard = ({ product, onDetailsClick, cartQuantity, onCartUpdat
           </div>
         </div>
 
-        {product.rating > 0 && (
-          <div className="mb-3 flex items-center gap-1 text-sm text-gray-600">
-            <span>⭐</span>
-            <span>{product.rating.toFixed(1)}</span>
-            <span className="text-gray-400">({product.ratingCount})</span>
-          </div>
-        )}
+        <div className="mb-3 flex items-center gap-1 text-sm text-gray-600">
+          <span>⭐</span>
+          <span>{product.rating > 0 ? product.rating.toFixed(1) : '0.0'}</span>
+          <span className="text-gray-400">({product.ratingCount})</span>
+        </div>
 
         <Button
           variant="primary"
