@@ -1,6 +1,6 @@
 import './App.css'
 import { Routes, Route } from 'react-router-dom'
-import { Navbar, Footer, Container } from './shared/layouts'
+import { Navbar, Footer } from './shared/layouts'
 import { LoginPage, RegisterPage, ForgotPasswordPage, ResetPasswordPage } from './pages/auth'
 import { ProfilePage } from './pages/profile'
 import MenuPage from './pages/menu'
@@ -10,18 +10,7 @@ import ReviewsPage from './pages/reviews/ReviewsPage'
 import PaymentPage from './pages/payment/PaymentPage'
 import PaymentSuccessPage from './pages/payment/PaymentSuccessPage'
 import ReviewPage from './pages/review/ReviewPage'
-
-function HomePage() {
-  return (
-    <main className="grow py-8">
-      <Container>
-        <h1 className="text-4xl font-heading font-bold">
-          Welcome to Kosher Clouds
-        </h1>
-      </Container>
-    </main>
-  );
-}
+import HomePage from './pages/home/HomePage'
 
 function App() {
   return (

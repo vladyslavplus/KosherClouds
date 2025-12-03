@@ -4,6 +4,10 @@
     "booking": "Booking",
     "reviews": "Reviews"
   },
+  "home": {
+    "subtitle": "Enjoy Jewish cuisine",
+    "menuButton": "Menu"
+  },
   "menu": {
     "title": "Menu",
     "hookahInfo": "Information: Hookah ordering is available only when booking a table",
