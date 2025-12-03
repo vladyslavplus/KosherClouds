@@ -108,11 +108,15 @@ namespace KosherClouds.BookingService.Services
 
         public async Task<BookingResponseDto> CreateBookingAsync(Guid userId, BookingCreateDto dto, CancellationToken cancellationToken = default)
         {
+            var bookingDateTime = DateTime.SpecifyKind(dto.BookingDateTime, DateTimeKind.Utc);
+
             await ValidateBookingBusinessRulesAsync(dto, cancellationToken);
 
             var booking = _mapper.Map<Booking>(dto);
             booking.UserId = userId;
             booking.Status = BookingStatus.Pending;
+            booking.CreatedAt = DateTime.UtcNow;
+            booking.BookingDateTime = bookingDateTime;
 
             await _dbContext.Bookings.AddAsync(booking, cancellationToken);
             await _dbContext.SaveChangesAsync(cancellationToken);
@@ -160,7 +164,7 @@ namespace KosherClouds.BookingService.Services
             }
 
             if (dto.BookingDateTime.HasValue)
-                booking.BookingDateTime = dto.BookingDateTime.Value;
+                booking.BookingDateTime = DateTime.SpecifyKind(dto.BookingDateTime.Value, DateTimeKind.Utc);
 
             if (dto.Adults.HasValue)
                 booking.Adults = dto.Adults.Value;
@@ -380,8 +384,8 @@ namespace KosherClouds.BookingService.Services
             CancellationToken cancellationToken,
             Guid? excludeBookingId = null)
         {
-            var startTime = bookingDateTime.AddMinutes(-BookingBufferMinutes);
-            var endTime = bookingDateTime.AddMinutes(BookingBufferMinutes);
+            var startTime = DateTime.SpecifyKind(bookingDateTime.AddMinutes(-BookingBufferMinutes), DateTimeKind.Utc);
+            var endTime = DateTime.SpecifyKind(bookingDateTime.AddMinutes(BookingBufferMinutes), DateTimeKind.Utc);
             var zoneEnum = Enum.Parse<BookingZone>(zone, true);
 
             var query = _dbContext.Bookings
