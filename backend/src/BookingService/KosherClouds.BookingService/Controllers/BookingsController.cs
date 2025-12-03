@@ -5,6 +5,7 @@ using KosherClouds.ServiceDefaults.Extensions;
 using KosherClouds.ServiceDefaults.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace KosherClouds.BookingService.Controllers
 {
@@ -41,6 +42,16 @@ namespace KosherClouds.BookingService.Controllers
                 parameters,
                 isAdminOrManager,
                 cancellationToken);
+
+            Response.Headers["X-Pagination"] = JsonSerializer.Serialize(new
+            {
+                bookings.TotalCount,
+                bookings.PageSize,
+                bookings.CurrentPage,
+                bookings.TotalPages,
+                bookings.HasNext,
+                bookings.HasPrevious
+            }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
             return Ok(bookings);
         }

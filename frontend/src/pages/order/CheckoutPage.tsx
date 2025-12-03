@@ -26,6 +26,7 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [processingPickup, setProcessingPickup] = useState(false);
 
   const [contactName, setContactName] = useState('');
   const [contactPhone, setContactPhone] = useState('');
@@ -84,27 +85,32 @@ export default function CheckoutPage() {
           receiptEmail: user.email || confirmedOrder.contactEmail,
         });
 
-        if (paymentResponse.clientSecret) {
-          navigate('/payment', {
-            state: {
-              clientSecret: paymentResponse.clientSecret,
-              orderId: confirmedOrder.id,
-              amount: confirmedOrder.totalAmount,
-              amountUsd: amountInUsd,
-            }
-          });
-        } else {
+        if (!paymentResponse.clientSecret) {
           throw new Error('No client secret received');
         }
-      } else {
-        navigate('/order-success', {
-          state: { orderId: confirmedOrder.id }
+
+        navigate('/payment', {
+          state: {
+            clientSecret: paymentResponse.clientSecret,
+            orderId: confirmedOrder.id,
+            amount: confirmedOrder.totalAmount,
+            amountUsd: amountInUsd,
+          }
         });
+
+        return;
       }
+
+      setProcessingPickup(true);
+
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      navigate('/profile', { state: { tab: 'orders' } });
+
     } catch (error) {
       console.error('Error confirming order:', error);
       alert(t('checkout.error'));
-      setProcessingPayment(false);
+      setProcessingPickup(false);
     } finally {
       setSubmitting(false);
     }
@@ -123,29 +129,29 @@ export default function CheckoutPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F3F4F6]">
-        <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#8B6914] border-t-transparent"></div>
-      </div>
+      <Loader message={t('checkout.processingOrder')} />
     );
   }
 
   if (processingPayment) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F3F4F6]">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-[#8B6914] border-t-transparent mb-4"></div>
-          <h2 className="text-2xl font-playfair font-bold text-[#1A1F3A] mb-2">
-            {t('checkout.processingOrder')}
-          </h2>
-          <p className="text-gray-600">{t('checkout.redirectingToPayment')}</p>
-        </div>
-      </div>
+      <Loader 
+        message={t('checkout.processingOrder')} 
+        sub={t('checkout.redirectingToPayment')} 
+      />
     );
   }
 
-  if (!order) {
-    return null;
+  if (processingPickup) {
+    return (
+      <Loader 
+        message={t('checkout.processingPickupOrder')} 
+        sub={t('checkout.redirectingToOrders')} 
+      />
+    );
   }
+
+  if (!order) return null;
 
   const totalAmount = order.totalAmount;
   const selectedPaymentLabel = paymentOptions.find(opt => opt.value === paymentType)?.label || '';
@@ -158,87 +164,76 @@ export default function CheckoutPage() {
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
           <div className="bg-white rounded-lg p-6">
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4 text-[#1A1F3A]">
-                {t('checkout.contactInfo')}
-              </h2>
 
-              <div className="space-y-4">
-                <Input
-                  label={t('checkout.name')}
-                  value={contactName}
-                  onChange={(e) => setContactName(e.target.value)}
-                  placeholder={t('checkout.namePlaceholder')}
-                  bordered
-                  rounded="full"
-                  required
-                />
+            <h2 className="text-xl font-semibold mb-4 text-[#1A1F3A]">
+              {t('checkout.contactInfo')}
+            </h2>
 
-                <Input
-                  label={t('checkout.email')}
-                  type="email"
-                  value={order.contactEmail}
-                  disabled
-                  bordered
-                  rounded="full"
-                />
-
-                <Input
-                  label={t('checkout.phone')}
-                  type="tel"
-                  value={contactPhone}
-                  onChange={(e) => setContactPhone(e.target.value)}
-                  placeholder={t('checkout.phonePlaceholder')}
-                  bordered
-                  rounded="full"
-                  required
-                />
-
-                <div className="pt-2">
-                  <p className="text-sm text-gray-600">
-                    {t('checkout.contactInfoNote')}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="border-t-2 border-gray-100 my-8"></div>
-
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4 text-[#1A1F3A]">
-                {t('checkout.orderNotes')}
-              </h2>
-
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder={t('checkout.orderNotesPlaceholder')}
-                rows={4}
-                maxLength={500}
-                className="w-full px-6 py-3 border-2 border-[#000000] rounded-2xl font-heading font-medium text-lg text-[#000000] placeholder:text-[#B4B6D4] focus:outline-none resize-none"
-              />
-
-              <p className="text-sm text-orange-600 mt-2 font-semibold">
-                ⚠️ {t('checkout.pickupOnlyWarning')}
-              </p>
-            </div>
-
-            <div className="border-t-2 border-gray-100 my-8"></div>
-
-            <div>
-              <h2 className="text-xl font-semibold mb-4 text-[#1A1F3A]">
-                {t('checkout.payment')}
-              </h2>
-
-              <Select
-                options={paymentOptions}
-                value={paymentType}
-                onChange={(value) => setPaymentType(value as PaymentType)}
+            <div className="space-y-4 mb-8">
+              <Input
+                label={t('checkout.name')}
+                value={contactName}
+                onChange={(e) => setContactName(e.target.value)}
+                placeholder={t('checkout.namePlaceholder')}
+                bordered
                 rounded="full"
-                className="w-full"
+                required
+              />
+
+              <Input
+                label={t('checkout.email')}
+                type="email"
+                value={order.contactEmail}
+                disabled
+                bordered
+                rounded="full"
+              />
+
+              <Input
+                label={t('checkout.phone')}
+                type="tel"
+                value={contactPhone}
+                onChange={(e) => setContactPhone(e.target.value)}
+                placeholder={t('checkout.phonePlaceholder')}
+                bordered
+                rounded="full"
+                required
               />
             </div>
+
+            <div className="border-t-2 border-gray-100 my-8"></div>
+
+            <h2 className="text-xl font-semibold mb-4 text-[#1A1F3A]">
+              {t('checkout.orderNotes')}
+            </h2>
+
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder={t('checkout.orderNotesPlaceholder')}
+              rows={4}
+              className="w-full px-6 py-3 border-2 border-[#000000] rounded-2xl resize-none"
+            />
+
+            <p className="text-sm text-orange-600 mt-2 font-semibold">
+              ⚠️ {t('checkout.pickupOnlyWarning')}
+            </p>
+
+            <div className="border-t-2 border-gray-100 my-8"></div>
+
+            <h2 className="text-xl font-semibold mb-4 text-[#1A1F3A]">
+              {t('checkout.payment')}
+            </h2>
+
+            <Select
+              options={paymentOptions}
+              value={paymentType}
+              onChange={(value) => setPaymentType(value as PaymentType)}
+              rounded="full"
+              className="w-full"
+            />
           </div>
 
           <div>
@@ -256,14 +251,12 @@ export default function CheckoutPage() {
                   return (
                     <div key={item.id} className="flex justify-between items-start">
                       <div className="flex-1">
-                        <p className="font-semibold text-[#1A1F3A]">
-                          {itemName}
-                        </p>
+                        <p className="font-semibold text-[#1A1F3A]">{itemName}</p>
                         <p className="text-sm text-gray-600">
                           {item.quantity} × {item.unitPriceSnapshot.toFixed(2)} {t('menu.uah')}
                         </p>
                       </div>
-                      <p className="font-semibold text-[#1A1F3A] font-sans tabular-nums">
+                      <p className="font-semibold text-[#1A1F3A]">
                         {item.lineTotal.toFixed(2)} {t('menu.uah')}
                       </p>
                     </div>
@@ -273,28 +266,20 @@ export default function CheckoutPage() {
 
               <div className="border-t-2 border-gray-200 pt-4 mb-4">
                 <div className="flex justify-between items-center mb-4">
-                  <span className="text-xl font-semibold text-[#1A1F3A]">
-                    {t('checkout.total')}
-                  </span>
-                  <span className="text-2xl font-bold text-[#8B6914] font-sans tabular-nums">
+                  <span className="text-xl font-semibold">{t('checkout.total')}</span>
+                  <span className="text-2xl font-bold text-[#8B6914]">
                     {totalAmount.toFixed(2)} {t('menu.uah')}
                   </span>
                 </div>
 
-                <div className="flex justify-between items-center text-gray-600">
-                  <span className="text-sm">
-                    {t('checkout.paymentMethod')}:
-                  </span>
-                  <span className="text-sm font-semibold">
-                    {selectedPaymentLabel}
-                  </span>
+                <div className="flex justify-between items-center text-gray-600 text-sm">
+                  <span>{t('checkout.paymentMethod')}:</span>
+                  <span className="font-semibold">{selectedPaymentLabel}</span>
                 </div>
               </div>
 
               <Button
                 variant="primary"
-                size="sm"
-                rounded="full"
                 fullWidth
                 onClick={handleConfirmOrder}
                 isLoading={submitting}
@@ -305,14 +290,29 @@ export default function CheckoutPage() {
 
               <button
                 onClick={handleBackToCart}
-                disabled={submitting || processingPayment}
-                className="w-full mt-4 text-gray-600 hover:text-gray-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full mt-4 text-gray-600 hover:text-gray-800 font-medium"
               >
                 {t('checkout.backToCart')}
               </button>
+
             </div>
           </div>
+
         </div>
+      </div>
+    </div>
+  );
+}
+
+function Loader({ message, sub }: { message: string; sub?: string }) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#F3F4F6]">
+      <div className="text-center">
+        <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-[#8B6914] border-t-transparent mb-4"></div>
+        <h2 className="text-2xl font-playfair font-bold text-[#1A1F3A] mb-2">
+          {message}
+        </h2>
+        {sub && <p className="text-gray-600">{sub}</p>}
       </div>
     </div>
   );

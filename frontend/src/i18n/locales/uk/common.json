@@ -149,7 +149,9 @@
     "orderConfirmed": "Замовлення успішно оформлено!",
     "error": "Помилка при оформленні замовлення. Спробуйте ще раз.",
     "processingOrder": "Обробляємо ваше замовлення...",
-    "redirectingToPayment": "Перенаправляємо вас на сторінку оплати..."
+    "redirectingToPayment": "Перенаправляємо вас на сторінку оплати...",
+    "processingPickupOrder": "Завершуємо оформлення вашого замовлення...",
+    "redirectingToOrders": "Перенаправляємо вас до ваших замовлень..."
   },
   "review": {
     "leaveReview": "Залишити відгук",
@@ -222,6 +224,15 @@
     "adults": "Дорослі",
     "children": "Діти",
     "zone": "Зона",
+    "guests": "Гості",
+    "adultsCount": " дорослих",
+    "adultsCount_one": " дорослий",
+    "adultsCount_few": " дорослих",
+    "adultsCount_many": " дорослих",
+    "childrenCount": " дітей",
+    "childrenCount_one": " дитина",
+    "childrenCount_few": " дитини",
+    "childrenCount_many": " дітей",
     "zones": {
       "mainHall": "Основний зал",
       "terrace": "Тераса",
@@ -260,6 +271,25 @@
       "phoneInvalid": "Невірний формат номеру телефону",
       "dateRequired": "Дата та час бронювання обов'язкові",
       "dateFuture": "Дата бронювання повинна бути в майбутньому"
+    }
+  },
+  "bookings": {
+    "noBookings": "У вас ще немає бронювань",
+    "bookingNumber": "Номер бронювання",
+    "at": "о",
+    "createdOn": "Створено",
+    "cancelBooking": "Скасувати бронювання",
+    "sortBy": {
+      "label": "Сортувати за",
+      "newest": "Найновіші",
+      "oldest": "Найстаріші"
+    },
+    "status": {
+      "pending": "Очікується",
+      "confirmed": "Підтверджено",
+      "cancelled": "Скасовано",
+      "completed": "Завершено",
+      "noshow": "Не з'явився"
     }
   },
   "orders": {

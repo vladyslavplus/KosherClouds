@@ -88,7 +88,7 @@ function BookingPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const isPhoneValid = validatePhone(formData.phoneNumber);
     const isDateValid = validateDate(formData.bookingDateTime);
 
@@ -107,18 +107,20 @@ function BookingPage() {
         zone: formData.zone,
         phoneNumber: formData.phoneNumber,
         comment: formData.comment || null,
-        hookahs: formData.hookahs && formData.hookahs.length > 0 
+        hookahs: formData.hookahs && formData.hookahs.length > 0
           ? formData.hookahs.map(h => ({
-              tobaccoFlavor: h.tobaccoFlavor,
-              strength: h.strength,
-              serveAfterMinutes: h.serveAfterMinutes,
-              notes: h.notes,
-            }))
+            tobaccoFlavor: h.tobaccoFlavor,
+            strength: h.strength,
+            serveAfterMinutes: h.serveAfterMinutes,
+            notes: h.notes,
+          }))
           : undefined,
       };
 
       await bookingsApi.createBooking(bookingData);
-      navigate('/profile');
+
+      navigate('/profile', { state: { tab: 'bookings' } });
+
     } catch (err: any) {
       setError(err.response?.data?.message || t('booking.error'));
     } finally {
@@ -279,18 +281,18 @@ function BookingPage() {
                     <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
                       <div className="flex-1">
                         <p className="font-medium">
-                          {isUk ? hookah.productNameUk || hookah.productName : hookah.productName}
+                          {isUk && hookah.productNameUk ? hookah.productNameUk : hookah.productName}
                         </p>
                         <p className="text-sm text-gray-600">
                           {t('booking.strength')}: {t(`booking.strengthLevels.${hookah.strength.toLowerCase()}`)}
                         </p>
                         <p className="text-sm text-gray-600">
-                          {t('booking.serveAfter')}: {hookah.serveAfterMinutes ? `${hookah.serveAfterMinutes} ${t('booking.minutes')}` : t('booking.immediately')}
+                          {t('booking.serveAfter')}: {hookah.serveAfterMinutes && hookah.serveAfterMinutes > 0 ? `${hookah.serveAfterMinutes} ${t('booking.minutes')}` : t('booking.immediately')}
                         </p>
                         {hookah.notes && (
                           <p className="text-sm text-gray-600">{hookah.notes}</p>
                         )}
-                        <p className="text-sm font-semibold text-secondary mt-1">
+                        <p className="text-sm font-semibold text-secondary mt-1 tabular-nums">
                           {hookah.price} {isUk ? 'грн' : 'uah'}
                         </p>
                       </div>
@@ -304,7 +306,7 @@ function BookingPage() {
                     </div>
                   ))}
                   <div className="text-right pt-2 border-t">
-                    <p className="text-lg font-semibold">
+                    <p className="text-lg font-semibold tabular-nums">
                       {t('booking.totalHookahPrice')}: {totalHookahPrice} {isUk ? 'грн' : 'uah'}
                     </p>
                   </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../lib/stores/authStore';
 import { usersApi, type UserProfile } from '../../lib/api/users';
@@ -8,12 +8,14 @@ import { Input } from '../../shared/ui/Input';
 import { Button } from '../../shared/ui/Button';
 import { EditableField } from '@/shared/components/EditableField';
 import { OrdersTab } from './components/OrdersTab';
+import { BookingsTab } from './components/BookingsTab';
 
 export function ProfilePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user: authUser, isAuthenticated, logout } = useAuthStore();
 
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('profile');
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,6 +49,12 @@ export function ProfilePage() {
     }
     loadUser();
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (location.state?.tab) {
+      setActiveTab(location.state.tab);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     if (user) {
@@ -170,8 +178,8 @@ export function ProfilePage() {
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
                   className={`w-full text-left px-4 py-3 font-heading font-semibold text-lg transition-colors mb-2 rounded-lg ${activeTab === tab.id
-                      ? 'bg-[#1A1F3A] text-white'
-                      : 'text-gray-400 hover:bg-gray-100'
+                    ? 'bg-[#1A1F3A] text-white'
+                    : 'text-gray-400 hover:bg-gray-100'
                     }`}
                 >
                   {tab.label}
@@ -189,8 +197,8 @@ export function ProfilePage() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`w-full text-left px-4 py-3 font-heading font-semibold text-xl transition-colors mb-2 ${activeTab === tab.id
-                      ? 'text-[#000000]'
-                      : 'text-gray-400'
+                    ? 'text-[#000000]'
+                    : 'text-gray-400'
                     }`}
                 >
                   {tab.label}
@@ -323,15 +331,10 @@ export function ProfilePage() {
                 </div>
               </div>
             )}
-            
+
             {activeTab === 'orders' && <OrdersTab />}
 
-            {activeTab === 'bookings' && (
-              <div className="max-w-2xl mx-auto">
-                <h2 className="text-2xl font-heading font-bold mb-6">{t('profile.bookings')}</h2>
-                <p className="text-gray-600">{t('profile.bookingsPlaceholder')}</p>
-              </div>
-            )}
+            {activeTab === 'bookings' && <BookingsTab />}
 
             {activeTab === 'admin' && isAdmin && (
               <div className="max-w-2xl mx-auto">

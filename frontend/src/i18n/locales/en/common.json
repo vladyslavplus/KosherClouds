@@ -149,7 +149,9 @@
     "orderConfirmed": "Order confirmed successfully!",
     "error": "Error confirming order. Please try again.",
     "processingOrder": "Processing your order...",
-    "redirectingToPayment": "Redirecting you to the payment page..."
+    "redirectingToPayment": "Redirecting you to the payment page...",
+    "processingPickupOrder": "Finalizing your order...",
+    "redirectingToOrders": "Redirecting you to your orders..."
   },
   "review": {
     "leaveReview": "Leave a Review",
@@ -222,6 +224,13 @@
     "adults": "Adults",
     "children": "Children",
     "zone": "Zone",
+    "guests": "Guests",
+    "adultsCount": " adults",
+    "adultsCount_one": " adult",
+    "adultsCount_other": " adults",
+    "childrenCount": " children",
+    "childrenCount_one": " child",
+    "childrenCount_other": " children",
     "zones": {
       "mainHall": "Main Hall",
       "terrace": "Terrace",
@@ -260,6 +269,25 @@
       "phoneInvalid": "Invalid phone number format",
       "dateRequired": "Booking date and time is required",
       "dateFuture": "Booking date must be in the future"
+    }
+  },
+  "bookings": {
+    "noBookings": "You don't have any bookings yet",
+    "bookingNumber": "Booking number",
+    "at": "at",
+    "createdOn": "Created on",
+    "cancelBooking": "Cancel Booking",
+    "sortBy": {
+      "label": "Sort by",
+      "newest": "Newest",
+      "oldest": "Oldest"
+    },
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled",
+      "completed": "Completed",
+      "noshow": "No Show"
     }
   },
   "orders": {
