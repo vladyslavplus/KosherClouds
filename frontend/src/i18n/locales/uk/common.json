@@ -206,5 +206,55 @@
       "leaveReview": "Залишити відгук",
       "leaveReviewQuestion": "Хочете поділитись своїм досвідом?"
     }
+  },
+  "booking": {
+    "title": "Бронювання столика",
+    "dateTime": "Дата та час",
+    "adults": "Дорослі",
+    "children": "Діти",
+    "zone": "Зона",
+    "zones": {
+      "mainHall": "Основний зал",
+      "terrace": "Тераса",
+      "vip": "VIP"
+    },
+    "phoneNumber": "Номер телефону",
+    "comment": "Коментар",
+    "hookahPreOrder": "Передзамовлення кальяну",
+    "addHookah": "Додати кальян",
+    "selectHookah": "Оберіть кальян",
+    "hookahFlavor": "Смак кальяну",
+    "strength": "Міцність",
+    "strengthLevels": {
+      "light": "Легкий",
+      "medium": "Середній",
+      "strong": "Міцний"
+    },
+    "serveAfter": "Подати через",
+    "immediately": "Одразу",
+    "immediatelyNote": "Пусто - Кальян буде поданий одразу",
+    "minutes": "хвилин",
+    "minutesPlaceholder": "0-240 хвилин",
+    "notes": "Примітки",
+    "optional": "необов'язково",
+    "selected": "Обрано",
+    "confirm": "Підтвердити",
+    "cancel": "Скасувати",
+    "remove": "Видалити",
+    "noHookahs": "Кальяни не додані",
+    "totalHookahPrice": "Разом за кальяни",
+    "submit": "Забронювати",
+    "submitting": "Бронювання...",
+    "error": "Помилка бронювання",
+    "errors": {
+      "phoneRequired": "Номер телефону обов'язковий",
+      "phoneInvalid": "Невірний формат номеру телефону",
+      "dateRequired": "Дата та час бронювання обов'язкові",
+      "dateFuture": "Дата бронювання повинна бути в майбутньому"
+    }
+  },
+  "common": {
+    "loading": "Завантаження...",
+    "noImage": "Немає зображення"
   }
 }

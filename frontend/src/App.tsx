@@ -11,6 +11,7 @@ import PaymentPage from './pages/payment/PaymentPage'
 import PaymentSuccessPage from './pages/payment/PaymentSuccessPage'
 import ReviewPage from './pages/review/ReviewPage'
 import HomePage from './pages/home/HomePage'
+import BookingPage from './pages/booking/BookingPage'
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path='/menu' element={<MenuPage />} />
+        <Route path='/booking' element={<BookingPage />} />
         <Route path='/cart' element={<CartPage />} />
         <Route path='/checkout' element={<CheckoutPage />} />
         <Route path="/review" element={<ReviewPage />} />

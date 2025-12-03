@@ -206,5 +206,55 @@
       "leaveReview": "Leave a Review",
       "leaveReviewQuestion": "Would you like to share your experience?"
     }
+  },
+  "booking": {
+    "title": "Table Booking",
+    "dateTime": "Date and Time",
+    "adults": "Adults",
+    "children": "Children",
+    "zone": "Zone",
+    "zones": {
+      "mainHall": "Main Hall",
+      "terrace": "Terrace",
+      "vip": "VIP"
+    },
+    "phoneNumber": "Phone Number",
+    "comment": "Comment",
+    "hookahPreOrder": "Hookah Pre-Order",
+    "addHookah": "Add Hookah",
+    "selectHookah": "Select Hookah",
+    "hookahFlavor": "Hookah Flavor",
+    "strength": "Strength",
+    "strengthLevels": {
+      "light": "Light",
+      "medium": "Medium",
+      "strong": "Strong"
+    },
+    "serveAfter": "Serve after",
+    "immediately": "Immediately",
+    "immediatelyNote": "Emply - Hookah will be served immediately",
+    "minutes": "minutes",
+    "minutesPlaceholder": "0-240 minutes",
+    "notes": "Notes",
+    "optional": "optional",
+    "selected": "Selected",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "remove": "Remove",
+    "noHookahs": "No hookahs added",
+    "totalHookahPrice": "Total for hookahs",
+    "submit": "Book Table",
+    "submitting": "Booking...",
+    "error": "Booking error",
+    "errors": {
+      "phoneRequired": "Phone number is required",
+      "phoneInvalid": "Invalid phone number format",
+      "dateRequired": "Booking date and time is required",
+      "dateFuture": "Booking date must be in the future"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "noImage": "No Image"
   }
 }

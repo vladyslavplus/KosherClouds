@@ -1,6 +1,6 @@
 import { ProductResponse } from '@/lib/api/products';
 import { useTranslation } from 'react-i18next';
-import { LazyImage } from './LazyImage';
+import { LazyImage } from '@/shared/components/LazyImage';
 import PlusIcon from '@/assets/icons/plus.svg?react';
 import PlusCartIcon from '@/assets/icons/plus_cart.svg?react';
 import MinusIcon from '@/assets/icons/minus.svg?react';
