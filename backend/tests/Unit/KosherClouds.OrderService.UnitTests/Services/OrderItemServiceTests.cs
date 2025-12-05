@@ -123,6 +123,63 @@ namespace KosherClouds.OrderService.UnitTests.Services
             resultIds.Should().NotContain(item3.Id);
         }
 
+        [Fact]
+        public async Task GetItemsByOrderIdAsync_OrdersByCreatedAt()
+        {
+            // Arrange
+            var orderId = Guid.NewGuid();
+            var order = OrderTestData.CreateValidOrder();
+            order.Id = orderId;
+            order.Items.Clear();
+
+            var item1 = OrderTestData.CreateValidOrderItem(orderId);
+            item1.CreatedAt = DateTimeOffset.UtcNow.AddMinutes(-10);
+
+            var item2 = OrderTestData.CreateValidOrderItem(orderId);
+            item2.CreatedAt = DateTimeOffset.UtcNow.AddMinutes(-5);
+
+            var item3 = OrderTestData.CreateValidOrderItem(orderId);
+            item3.CreatedAt = DateTimeOffset.UtcNow;
+
+            await _dbContext.Orders.AddAsync(order);
+            await _dbContext.OrderItems.AddRangeAsync(item1, item2, item3);
+            await _dbContext.SaveChangesAsync();
+
+            // Act
+            var result = await _orderItemService.GetItemsByOrderIdAsync(orderId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().HaveCount(3);
+
+            var resultList = result.ToList();
+            resultList[0].CreatedAt.Should().BeBefore(resultList[1].CreatedAt);
+            resultList[1].CreatedAt.Should().BeBefore(resultList[2].CreatedAt);
+        }
+
+        [Fact]
+        public async Task GetOrderItemByIdAsync_WithUkrainianProductName_ReturnsCorrectly()
+        {
+            // Arrange
+            var orderId = Guid.NewGuid();
+            var order = OrderTestData.CreateValidOrder();
+            order.Id = orderId;
+            order.Items.Clear();
+
+            var orderItem = OrderTestData.CreateOrderItemWithUkrainianName(orderId);
+
+            await _dbContext.Orders.AddAsync(order);
+            await _dbContext.OrderItems.AddAsync(orderItem);
+            await _dbContext.SaveChangesAsync();
+
+            // Act
+            var result = await _orderItemService.GetOrderItemByIdAsync(orderItem.Id);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.ProductNameSnapshotUk.Should().NotBeNullOrEmpty();
+        }
+
         #endregion
 
         #region GetOrderItemByIdAsync Tests
@@ -314,6 +371,32 @@ namespace KosherClouds.OrderService.UnitTests.Services
             var updatedItem = await _dbContext.OrderItems.FindAsync(orderItem.Id);
             updatedItem.Should().NotBeNull();
             updatedItem!.Quantity.Should().Be(-1);
+        }
+
+        [Fact]
+        public async Task UpdateOrderItemQuantityAsync_WithLargeQuantity_UpdatesSuccessfully()
+        {
+            // Arrange
+            var orderId = Guid.NewGuid();
+            var order = OrderTestData.CreateValidOrder();
+            order.Id = orderId;
+            order.Items.Clear();
+
+            var orderItem = OrderTestData.CreateValidOrderItem(orderId);
+            orderItem.Quantity = 1;
+
+            await _dbContext.Orders.AddAsync(order);
+            await _dbContext.OrderItems.AddAsync(orderItem);
+            await _dbContext.SaveChangesAsync();
+
+            var newQuantity = 1000;
+
+            // Act
+            await _orderItemService.UpdateOrderItemQuantityAsync(orderItem.Id, newQuantity);
+
+            // Assert
+            var updatedItem = await _dbContext.OrderItems.FindAsync(orderItem.Id);
+            updatedItem!.Quantity.Should().Be(newQuantity);
         }
 
         #endregion

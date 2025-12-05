@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using KosherClouds.ServiceDefaults.Helpers;
+using KosherClouds.UserService.DTOs.User;
 using KosherClouds.UserService.Entities;
 using KosherClouds.UserService.Parameters;
 using KosherClouds.UserService.UnitTests.Helpers;
@@ -352,6 +353,537 @@ namespace KosherClouds.UserService.UnitTests.Services
 
             // Act
             var result = await _userService.GetUserPublicInfoAsync(nonExistentId);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        #endregion
+
+        #region UpdateUserAsync Tests
+
+        [Fact]
+        public async Task UpdateUserAsync_WithValidUserName_ReturnsSuccess()
+        {
+            // Arrange
+            var user = UserTestData.CreateValidUser();
+            user.UserName = "old_username";
+
+            _userManagerMock
+                .Setup(x => x.FindByIdAsync(user.Id.ToString()))
+                .ReturnsAsync(user);
+
+            _userManagerMock.SetupUsers(new List<ApplicationUser> { user });
+
+            _userManagerMock
+                .Setup(x => x.NormalizeName(It.IsAny<string>()))
+                .Returns<string>(name => name.ToUpperInvariant());
+
+            _userManagerMock
+                .Setup(x => x.UpdateAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync(IdentityResult.Success);
+
+            _userManagerMock
+                .Setup(x => x.UpdateNormalizedUserNameAsync(It.IsAny<ApplicationUser>()))
+                .Returns(Task.CompletedTask);
+
+            var request = new UpdateUserRequest
+            {
+                UserName = "new_username"
+            };
+
+            // Act
+            var (success, error) = await _userService.UpdateUserAsync(user.Id, request);
+
+            // Assert
+            success.Should().BeTrue();
+            error.Should().BeNull();
+            _userManagerMock.Verify(x => x.UpdateNormalizedUserNameAsync(It.IsAny<ApplicationUser>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_WithValidEmail_ReturnsSuccessAndResetsEmailConfirmed()
+        {
+            // Arrange
+            var user = UserTestData.CreateValidUser();
+            user.Email = "old@example.com";
+            user.EmailConfirmed = true;
+
+            _userManagerMock
+                .Setup(x => x.FindByIdAsync(user.Id.ToString()))
+                .ReturnsAsync(user);
+
+            _userManagerMock.SetupUsers(new List<ApplicationUser> { user });
+
+            _userManagerMock
+                .Setup(x => x.NormalizeEmail(It.IsAny<string>()))
+                .Returns<string>(email => email.ToUpperInvariant());
+
+            _userManagerMock
+                .Setup(x => x.UpdateAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync(IdentityResult.Success);
+
+            _userManagerMock
+                .Setup(x => x.UpdateNormalizedEmailAsync(It.IsAny<ApplicationUser>()))
+                .Returns(Task.CompletedTask);
+
+            var request = new UpdateUserRequest
+            {
+                Email = "new@example.com"
+            };
+
+            // Act
+            var (success, error) = await _userService.UpdateUserAsync(user.Id, request);
+
+            // Assert
+            success.Should().BeTrue();
+            error.Should().BeNull();
+            _userManagerMock.Verify(x => x.UpdateNormalizedEmailAsync(It.IsAny<ApplicationUser>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_WithValidPhoneNumber_ReturnsSuccessAndResetsPhoneConfirmed()
+        {
+            // Arrange
+            var user = UserTestData.CreateValidUser();
+            user.PhoneNumber = "+1234567890";
+            user.PhoneNumberConfirmed = true;
+
+            _userManagerMock
+                .Setup(x => x.FindByIdAsync(user.Id.ToString()))
+                .ReturnsAsync(user);
+
+            _userManagerMock.SetupUsers(new List<ApplicationUser> { user });
+
+            _userManagerMock
+                .Setup(x => x.UpdateAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync(IdentityResult.Success);
+
+            var request = new UpdateUserRequest
+            {
+                PhoneNumber = "+0987654321"
+            };
+
+            // Act
+            var (success, error) = await _userService.UpdateUserAsync(user.Id, request);
+
+            // Assert
+            success.Should().BeTrue();
+            error.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_WithDuplicateUserName_ReturnsFailure()
+        {
+            // Arrange
+            var user1 = UserTestData.CreateValidUser();
+            user1.UserName = "existing_user";
+            user1.NormalizedUserName = "EXISTING_USER";
+
+            var user2 = UserTestData.CreateValidUser();
+            user2.UserName = "current_user";
+            user2.NormalizedUserName = "CURRENT_USER";
+
+            _userManagerMock
+                .Setup(x => x.FindByIdAsync(user2.Id.ToString()))
+                .ReturnsAsync(user2);
+
+            _userManagerMock.SetupUsers(new List<ApplicationUser> { user1, user2 });
+
+            _userManagerMock
+                .Setup(x => x.NormalizeName(It.IsAny<string>()))
+                .Returns<string>(name => name.ToUpperInvariant());
+
+            var request = new UpdateUserRequest
+            {
+                UserName = "existing_user" // Trying to use user1's username
+            };
+
+            // Act
+            var (success, error) = await _userService.UpdateUserAsync(user2.Id, request);
+
+            // Assert
+            success.Should().BeFalse();
+            error.Should().Be("Username is already taken");
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_WithDuplicateEmail_ReturnsFailure()
+        {
+            // Arrange
+            var user1 = UserTestData.CreateValidUser();
+            user1.Email = "existing@example.com";
+            user1.NormalizedEmail = "EXISTING@EXAMPLE.COM";
+
+            var user2 = UserTestData.CreateValidUser();
+            user2.Email = "current@example.com";
+            user2.NormalizedEmail = "CURRENT@EXAMPLE.COM";
+
+            _userManagerMock
+                .Setup(x => x.FindByIdAsync(user2.Id.ToString()))
+                .ReturnsAsync(user2);
+
+            _userManagerMock.SetupUsers(new List<ApplicationUser> { user1, user2 });
+
+            _userManagerMock
+                .Setup(x => x.NormalizeEmail(It.IsAny<string>()))
+                .Returns<string>(email => email.ToUpperInvariant());
+
+            var request = new UpdateUserRequest
+            {
+                Email = "existing@example.com" // Trying to use user1's email
+            };
+
+            // Act
+            var (success, error) = await _userService.UpdateUserAsync(user2.Id, request);
+
+            // Assert
+            success.Should().BeFalse();
+            error.Should().Be("Email is already taken");
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_WithDuplicatePhoneNumber_ReturnsFailure()
+        {
+            // Arrange
+            var user1 = UserTestData.CreateValidUser();
+            user1.PhoneNumber = "+1234567890";
+
+            var user2 = UserTestData.CreateValidUser();
+            user2.PhoneNumber = "+0987654321";
+
+            _userManagerMock
+                .Setup(x => x.FindByIdAsync(user2.Id.ToString()))
+                .ReturnsAsync(user2);
+
+            _userManagerMock.SetupUsers(new List<ApplicationUser> { user1, user2 });
+
+            var request = new UpdateUserRequest
+            {
+                PhoneNumber = "+1234567890" // Trying to use user1's phone
+            };
+
+            // Act
+            var (success, error) = await _userService.UpdateUserAsync(user2.Id, request);
+
+            // Assert
+            success.Should().BeFalse();
+            error.Should().Be("Phone number is already taken");
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_WithNonExistentUser_ReturnsFailure()
+        {
+            // Arrange
+            var users = UserTestData.CreateUserList(3);
+            _userManagerMock.SetupUsers(users);
+
+            var nonExistentId = Guid.NewGuid();
+
+            _userManagerMock
+                .Setup(x => x.FindByIdAsync(nonExistentId.ToString()))
+                .ReturnsAsync((ApplicationUser?)null);
+
+            var request = new UpdateUserRequest
+            {
+                UserName = "new_username"
+            };
+
+            // Act
+            var (success, error) = await _userService.UpdateUserAsync(nonExistentId, request);
+
+            // Assert
+            success.Should().BeFalse();
+            error.Should().Be("User not found");
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_WhenUpdateFails_ReturnsFailureWithErrors()
+        {
+            // Arrange
+            var user = UserTestData.CreateValidUser();
+
+            _userManagerMock
+                .Setup(x => x.FindByIdAsync(user.Id.ToString()))
+                .ReturnsAsync(user);
+
+            _userManagerMock.SetupUsers(new List<ApplicationUser> { user });
+
+            _userManagerMock
+                .Setup(x => x.NormalizeName(It.IsAny<string>()))
+                .Returns<string>(name => name.ToUpperInvariant());
+
+            var identityErrors = new[]
+            {
+        new IdentityError { Description = "Update failed due to database error" }
+    };
+
+            _userManagerMock
+                .Setup(x => x.UpdateAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync(IdentityResult.Failed(identityErrors));
+
+            _userManagerMock
+                .Setup(x => x.UpdateNormalizedUserNameAsync(It.IsAny<ApplicationUser>()))
+                .Returns(Task.CompletedTask);
+
+            var request = new UpdateUserRequest
+            {
+                UserName = "new_username"
+            };
+
+            // Act
+            var (success, error) = await _userService.UpdateUserAsync(user.Id, request);
+
+            // Assert
+            success.Should().BeFalse();
+            error.Should().Contain("Update failed due to database error");
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_WithEmptyPhoneNumber_ClearsPhoneAndResetsConfirmation()
+        {
+            // Arrange
+            var user = UserTestData.CreateValidUser();
+            user.PhoneNumber = "+1234567890";
+            user.PhoneNumberConfirmed = true;
+
+            _userManagerMock
+                .Setup(x => x.FindByIdAsync(user.Id.ToString()))
+                .ReturnsAsync(user);
+
+            _userManagerMock.SetupUsers(new List<ApplicationUser> { user });
+
+            _userManagerMock
+                .Setup(x => x.UpdateAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync(IdentityResult.Success);
+
+            var request = new UpdateUserRequest
+            {
+                PhoneNumber = "" // Empty string to clear phone
+            };
+
+            // Act
+            var (success, error) = await _userService.UpdateUserAsync(user.Id, request);
+
+            // Assert
+            success.Should().BeTrue();
+            error.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_WithAllFieldsChanged_UpdatesSuccessfully()
+        {
+            // Arrange
+            var user = UserTestData.CreateValidUser();
+            user.UserName = "old_username";
+            user.Email = "old@example.com";
+            user.PhoneNumber = "+1234567890";
+            user.EmailConfirmed = true;
+            user.PhoneNumberConfirmed = true;
+
+            _userManagerMock
+                .Setup(x => x.FindByIdAsync(user.Id.ToString()))
+                .ReturnsAsync(user);
+
+            _userManagerMock.SetupUsers(new List<ApplicationUser> { user });
+
+            _userManagerMock
+                .Setup(x => x.NormalizeName(It.IsAny<string>()))
+                .Returns<string>(name => name.ToUpperInvariant());
+
+            _userManagerMock
+                .Setup(x => x.NormalizeEmail(It.IsAny<string>()))
+                .Returns<string>(email => email.ToUpperInvariant());
+
+            _userManagerMock
+                .Setup(x => x.UpdateAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync(IdentityResult.Success);
+
+            _userManagerMock
+                .Setup(x => x.UpdateNormalizedUserNameAsync(It.IsAny<ApplicationUser>()))
+                .Returns(Task.CompletedTask);
+
+            _userManagerMock
+                .Setup(x => x.UpdateNormalizedEmailAsync(It.IsAny<ApplicationUser>()))
+                .Returns(Task.CompletedTask);
+
+            var request = new UpdateUserRequest
+            {
+                UserName = "new_username",
+                Email = "new@example.com",
+                PhoneNumber = "+0987654321"
+            };
+
+            // Act
+            var (success, error) = await _userService.UpdateUserAsync(user.Id, request);
+
+            // Assert
+            success.Should().BeTrue();
+            error.Should().BeNull();
+            _userManagerMock.Verify(x => x.UpdateNormalizedUserNameAsync(It.IsAny<ApplicationUser>()), Times.Once);
+            _userManagerMock.Verify(x => x.UpdateNormalizedEmailAsync(It.IsAny<ApplicationUser>()), Times.Once);
+        }
+
+        #endregion
+
+        #region ChangePasswordAsync Tests
+
+        [Fact]
+        public async Task ChangePasswordAsync_WithCorrectCurrentPassword_ReturnsSuccess()
+        {
+            // Arrange
+            var user = UserTestData.CreateValidUser();
+
+            _userManagerMock.SetupUsers(new List<ApplicationUser> { user });
+
+            _userManagerMock
+                .Setup(x => x.ChangePasswordAsync(It.IsAny<ApplicationUser>(), "OldPassword@123", "NewPassword@123"))
+                .ReturnsAsync(IdentityResult.Success);
+
+            var request = new ChangePasswordRequest
+            {
+                CurrentPassword = "OldPassword@123",
+                NewPassword = "NewPassword@123"
+            };
+
+            // Act
+            var (success, error) = await _userService.ChangePasswordAsync(user.Id, request);
+
+            // Assert
+            success.Should().BeTrue();
+            error.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task ChangePasswordAsync_WithIncorrectCurrentPassword_ReturnsFailure()
+        {
+            // Arrange
+            var user = UserTestData.CreateValidUser();
+
+            _userManagerMock.SetupUsers(new List<ApplicationUser> { user });
+
+            var identityErrors = new[]
+            {
+        new IdentityError { Description = "Incorrect password" }
+    };
+
+            _userManagerMock
+                .Setup(x => x.ChangePasswordAsync(It.IsAny<ApplicationUser>(), "WrongPassword@123", "NewPassword@123"))
+                .ReturnsAsync(IdentityResult.Failed(identityErrors));
+
+            var request = new ChangePasswordRequest
+            {
+                CurrentPassword = "WrongPassword@123",
+                NewPassword = "NewPassword@123"
+            };
+
+            // Act
+            var (success, error) = await _userService.ChangePasswordAsync(user.Id, request);
+
+            // Assert
+            success.Should().BeFalse();
+            error.Should().Contain("Incorrect password");
+        }
+
+        [Fact]
+        public async Task ChangePasswordAsync_WithWeakNewPassword_ReturnsFailure()
+        {
+            // Arrange
+            var user = UserTestData.CreateValidUser();
+
+            _userManagerMock.SetupUsers(new List<ApplicationUser> { user });
+
+            var identityErrors = new[]
+            {
+        new IdentityError { Description = "Password must contain at least one uppercase letter" },
+        new IdentityError { Description = "Password must contain at least one special character" }
+    };
+
+            _userManagerMock
+                .Setup(x => x.ChangePasswordAsync(It.IsAny<ApplicationUser>(), "OldPassword@123", "weakpassword"))
+                .ReturnsAsync(IdentityResult.Failed(identityErrors));
+
+            var request = new ChangePasswordRequest
+            {
+                CurrentPassword = "OldPassword@123",
+                NewPassword = "weakpassword"
+            };
+
+            // Act
+            var (success, error) = await _userService.ChangePasswordAsync(user.Id, request);
+
+            // Assert
+            success.Should().BeFalse();
+            error.Should().Contain("uppercase letter");
+            error.Should().Contain("special character");
+        }
+
+        [Fact]
+        public async Task ChangePasswordAsync_WithNonExistentUser_ReturnsFailure()
+        {
+            // Arrange
+            var users = UserTestData.CreateUserList(3);
+            _userManagerMock.SetupUsers(users);
+
+            var nonExistentId = Guid.NewGuid();
+            var request = new ChangePasswordRequest
+            {
+                CurrentPassword = "OldPassword@123",
+                NewPassword = "NewPassword@123"
+            };
+
+            // Act
+            var (success, error) = await _userService.ChangePasswordAsync(nonExistentId, request);
+
+            // Assert
+            success.Should().BeFalse();
+            error.Should().Be("User not found");
+        }
+
+        #endregion
+
+        #region GetUserProfileAsync Tests
+
+        [Fact]
+        public async Task GetUserProfileAsync_WithValidId_ReturnsProfile()
+        {
+            // Arrange
+            var user = UserTestData.CreateValidUser();
+            user.FirstName = "John";
+            user.LastName = "Doe";
+            user.EmailConfirmed = true;
+            user.PhoneNumberConfirmed = false;
+
+            _userManagerMock.SetupUsers(new List<ApplicationUser> { user });
+
+            // Act
+            var result = await _userService.GetUserProfileAsync(user.Id);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.Id.Should().Be(user.Id);
+            result.UserName.Should().Be(user.UserName);
+            result.Email.Should().Be(user.Email);
+            result.PhoneNumber.Should().Be(user.PhoneNumber);
+            result.FirstName.Should().Be("John");
+            result.LastName.Should().Be("Doe");
+            result.EmailConfirmed.Should().BeTrue();
+            result.PhoneNumberConfirmed.Should().BeFalse();
+            result.CreatedAt.Should().Be(user.CreatedAt);
+            result.UpdatedAt.Should().Be(user.UpdatedAt);
+        }
+
+        [Fact]
+        public async Task GetUserProfileAsync_WithInvalidId_ReturnsNull()
+        {
+            // Arrange
+            var users = UserTestData.CreateUserList(3);
+            _userManagerMock.SetupUsers(users);
+
+            var nonExistentId = Guid.NewGuid();
+
+            // Act
+            var result = await _userService.GetUserProfileAsync(nonExistentId);
 
             // Assert
             result.Should().BeNull();

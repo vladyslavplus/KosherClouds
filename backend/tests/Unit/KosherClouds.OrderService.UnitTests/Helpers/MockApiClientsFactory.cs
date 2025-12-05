@@ -8,17 +8,35 @@ namespace KosherClouds.OrderService.UnitTests.Helpers
     {
         public static Mock<ICartApiClient> CreateCartApiClient()
         {
-            return new Mock<ICartApiClient>();
+            var mock = new Mock<ICartApiClient>();
+
+            mock.Setup(x => x.GetCartAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<CartItemDto>());
+
+            mock.Setup(x => x.ClearCartAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+
+            return mock;
         }
 
         public static Mock<IProductApiClient> CreateProductApiClient()
         {
-            return new Mock<IProductApiClient>();
+            var mock = new Mock<IProductApiClient>();
+
+            mock.Setup(x => x.GetProductAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((ProductInfoDto?)null);
+
+            return mock;
         }
 
         public static Mock<IUserApiClient> CreateUserApiClient()
         {
-            return new Mock<IUserApiClient>();
+            var mock = new Mock<IUserApiClient>();
+
+            mock.Setup(x => x.GetUserAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((UserInfoDto?)null);
+
+            return mock;
         }
 
         public static void SetupGetCart(

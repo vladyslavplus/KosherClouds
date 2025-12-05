@@ -1,6 +1,7 @@
 ﻿using Bogus;
 using KosherClouds.Common.Seed;
 using KosherClouds.UserService.DTOs.Auth;
+using KosherClouds.UserService.DTOs.User;
 using KosherClouds.UserService.Entities;
 using KosherClouds.UserService.Parameters;
 
@@ -205,6 +206,25 @@ namespace KosherClouds.UserService.UnitTests.Helpers
                 Created = DateTime.UtcNow,
                 UserId = userId,
                 Revoked = DateTime.UtcNow.AddMinutes(-5)
+            };
+        }
+
+        public static UpdateUserRequest CreateValidUpdateUserRequest()
+        {
+            return new UpdateUserRequest
+            {
+                UserName = _faker.Internet.UserName(),
+                Email = _faker.Internet.Email(),
+                PhoneNumber = $"+380{_faker.Random.Number(500000000, 999999999)}"
+            };
+        }
+
+        public static ChangePasswordRequest CreateValidChangePasswordRequest()
+        {
+            return new ChangePasswordRequest
+            {
+                CurrentPassword = "OldPassword@123",
+                NewPassword = "NewPassword@123"
             };
         }
 

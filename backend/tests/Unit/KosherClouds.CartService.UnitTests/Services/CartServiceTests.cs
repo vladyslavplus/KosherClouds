@@ -116,6 +116,23 @@ namespace KosherClouds.CartService.UnitTests.Services
             result.Items[0].Quantity.Should().Be(quantity);
         }
 
+        [Fact]
+        public async Task GetCartDetailsAsync_WithManyItems_ReturnsAllItems()
+        {
+            // Arrange
+            var userId = CartTestData.CreateUserId();
+            var cart = CartTestData.CreateCartWithItems(userId, 50);
+            var key = GetCartKey(userId);
+
+            _cacheMock.SetupGetData(key, cart);
+
+            // Act
+            var result = await _cartService.GetCartDetailsAsync(userId);
+
+            // Assert
+            result.Items.Should().HaveCount(50);
+        }
+
         #endregion
 
         #region AddOrUpdateItemAsync Tests
@@ -370,6 +387,58 @@ namespace KosherClouds.CartService.UnitTests.Services
             _cacheMock.VerifySetDataCalled<ShoppingCart>(key, Times.Once());
         }
 
+        [Fact]
+        public async Task AddOrUpdateItemAsync_SetsCacheTtlCorrectly()
+        {
+            // Arrange
+            var userId = CartTestData.CreateUserId();
+            var productId = Guid.NewGuid();
+            var addDto = CartTestData.CreateCartItemAddDto(productId, 1);
+            var key = GetCartKey(userId);
+
+            TimeSpan? capturedTtl = null;
+
+            _cacheMock.Setup(x => x.GetDataAsync<ShoppingCart>(key))
+                .ReturnsAsync((ShoppingCart?)null);
+
+            _cacheMock.Setup(x => x.SetDataAsync(key, It.IsAny<ShoppingCart>(), It.IsAny<TimeSpan?>()))
+                .Callback<string, ShoppingCart, TimeSpan?>((k, c, t) => capturedTtl = t)
+                .Returns(Task.CompletedTask);
+
+            // Act
+            await _cartService.AddOrUpdateItemAsync(userId, addDto);
+
+            // Assert
+            capturedTtl.Should().NotBeNull();
+            capturedTtl.Should().Be(TimeSpan.FromMinutes(30));
+        }
+
+        [Fact]
+        public async Task AddOrUpdateItemAsync_WithLargeQuantity_AddsSuccessfully()
+        {
+            // Arrange
+            var userId = CartTestData.CreateUserId();
+            var productId = Guid.NewGuid();
+            var addDto = CartTestData.CreateCartItemAddDto(productId, 9999);
+            var key = GetCartKey(userId);
+
+            ShoppingCart? savedCart = null;
+
+            _cacheMock.Setup(x => x.GetDataAsync<ShoppingCart>(key))
+                .ReturnsAsync(() => savedCart);
+
+            _cacheMock.Setup(x => x.SetDataAsync(key, It.IsAny<ShoppingCart>(), It.IsAny<TimeSpan?>()))
+                .Callback<string, ShoppingCart, TimeSpan?>((k, c, t) => savedCart = c)
+                .Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _cartService.AddOrUpdateItemAsync(userId, addDto);
+
+            // Assert
+            result.Items.Should().HaveCount(1);
+            result.Items[0].Quantity.Should().Be(9999);
+        }
+
         #endregion
 
         #region RemoveItemAsync Tests
@@ -466,6 +535,31 @@ namespace KosherClouds.CartService.UnitTests.Services
             capturedCart.Items.Should().Contain(i => i.ProductId == productId1);
             capturedCart.Items.Should().Contain(i => i.ProductId == productId3);
             capturedCart.Items.Should().NotContain(i => i.ProductId == productId2);
+        }
+
+        [Fact]
+        public async Task RemoveItemAsync_UpdatesCacheTtl()
+        {
+            // Arrange
+            var userId = CartTestData.CreateUserId();
+            var productId = Guid.NewGuid();
+            var cart = CartTestData.CreateEmptyCart(userId);
+            cart.Items.Add(CartTestData.CreateCartItem(productId, 3));
+
+            var key = GetCartKey(userId);
+
+            TimeSpan? capturedTtl = null;
+
+            _cacheMock.SetupGetData(key, cart);
+            _cacheMock.Setup(x => x.SetDataAsync(key, It.IsAny<ShoppingCart>(), It.IsAny<TimeSpan?>()))
+                .Callback<string, ShoppingCart, TimeSpan?>((k, c, t) => capturedTtl = t)
+                .Returns(Task.CompletedTask);
+
+            // Act
+            await _cartService.RemoveItemAsync(userId, productId);
+
+            // Assert
+            capturedTtl.Should().Be(TimeSpan.FromMinutes(30));
         }
 
         #endregion

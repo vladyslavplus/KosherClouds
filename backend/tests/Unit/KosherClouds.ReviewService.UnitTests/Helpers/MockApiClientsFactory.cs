@@ -8,12 +8,33 @@ namespace KosherClouds.ReviewService.UnitTests.Helpers
     {
         public static Mock<IOrderApiClient> CreateOrderApiClient()
         {
-            return new Mock<IOrderApiClient>();
+            var mock = new Mock<IOrderApiClient>();
+
+            mock.Setup(x => x.GetOrderByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((OrderDto?)null);
+
+            mock.Setup(x => x.GetPaidOrdersForUserAsync(
+                    It.IsAny<Guid>(),
+                    It.IsAny<int>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new List<OrderDto>());
+
+            return mock;
         }
 
         public static Mock<IUserApiClient> CreateUserApiClient()
         {
-            return new Mock<IUserApiClient>();
+            var mock = new Mock<IUserApiClient>();
+
+            mock.Setup(x => x.GetUserByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((UserDto?)null);
+
+            mock.Setup(x => x.GetUserNamesByIdsAsync(
+                    It.IsAny<List<Guid>>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Dictionary<Guid, string>());
+
+            return mock;
         }
 
         public static void SetupGetOrderById(

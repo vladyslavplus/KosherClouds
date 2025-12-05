@@ -34,7 +34,7 @@ namespace KosherClouds.ProductService.UnitTests.Services
             _sortHelperMock
                 .Setup(x => x.ApplySort(It.IsAny<IQueryable<Product>>(), It.IsAny<string>()))
                 .Returns<IQueryable<Product>, string>((query, orderBy) => query);
-            
+
             _sortHelperFactoryMock = new Mock<ISortHelperFactory>();
             _sortHelperFactoryMock
                 .Setup(x => x.Create<Product>())
@@ -118,6 +118,127 @@ namespace KosherClouds.ProductService.UnitTests.Services
             result.Should().NotBeNull();
             result.Count.Should().Be(1);
             result[0].Name.Should().Be("Kugel Special");
+        }
+
+        [Fact]
+        public async Task GetProductsAsync_WithNameUkFilter_ReturnsMatchingProducts()
+        {
+            // Arrange
+            var product1 = ProductTestData.CreateValidProduct();
+            product1.Name = "Kugel";
+            product1.NameUk = "Кугель";
+
+            var product2 = ProductTestData.CreateValidProduct();
+            product2.Name = "Falafel";
+            product2.NameUk = "Фалафель";
+
+            await _dbContext.Products.AddRangeAsync(product1, product2);
+            await _dbContext.SaveChangesAsync();
+
+            var parameters = new ProductParameters
+            {
+                NameUk = "Кугель",
+                PageNumber = 1,
+                PageSize = 10
+            };
+
+            // Act
+            var result = await _productService.GetProductsAsync(parameters);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Count.Should().Be(1);
+            result[0].NameUk.Should().Be("Кугель");
+        }
+
+        [Fact]
+        public async Task GetProductsAsync_WithSubCategoryFilter_ReturnsMatchingProducts()
+        {
+            // Arrange
+            var product1 = ProductTestData.CreateValidProduct();
+            product1.SubCategory = "Main Course";
+
+            var product2 = ProductTestData.CreateValidProduct();
+            product2.SubCategory = "Appetizer";
+
+            await _dbContext.Products.AddRangeAsync(product1, product2);
+            await _dbContext.SaveChangesAsync();
+
+            var parameters = new ProductParameters
+            {
+                SubCategory = "Main Course",
+                PageNumber = 1,
+                PageSize = 10
+            };
+
+            // Act
+            var result = await _productService.GetProductsAsync(parameters);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Count.Should().Be(1);
+            result[0].SubCategory.Should().Be("Main Course");
+        }
+
+        [Fact]
+        public async Task GetProductsAsync_WithSubCategoryUkFilter_ReturnsMatchingProducts()
+        {
+            // Arrange
+            var product1 = ProductTestData.CreateValidProduct();
+            product1.SubCategory = "Main Course";
+            product1.SubCategoryUk = "Основна страва";
+
+            var product2 = ProductTestData.CreateValidProduct();
+            product2.SubCategory = "Appetizer";
+            product2.SubCategoryUk = "Закуска";
+
+            await _dbContext.Products.AddRangeAsync(product1, product2);
+            await _dbContext.SaveChangesAsync();
+
+            var parameters = new ProductParameters
+            {
+                SubCategoryUk = "Основна страва",
+                PageNumber = 1,
+                PageSize = 10
+            };
+
+            // Act
+            var result = await _productService.GetProductsAsync(parameters);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Count.Should().Be(1);
+            result[0].SubCategoryUk.Should().Be("Основна страва");
+        }
+
+        [Fact]
+        public async Task GetProductsAsync_WithIsPromotionalFilter_ReturnsOnlyPromotionalProducts()
+        {
+            // Arrange
+            var product1 = ProductTestData.CreateValidProduct();
+            product1.IsPromotional = true;
+            product1.DiscountPrice = 50m;
+
+            var product2 = ProductTestData.CreateValidProduct();
+            product2.IsPromotional = false;
+
+            await _dbContext.Products.AddRangeAsync(product1, product2);
+            await _dbContext.SaveChangesAsync();
+
+            var parameters = new ProductParameters
+            {
+                IsPromotional = true,
+                PageNumber = 1,
+                PageSize = 10
+            };
+
+            // Act
+            var result = await _productService.GetProductsAsync(parameters);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Count.Should().Be(1);
+            result[0].IsPromotional.Should().BeTrue();
         }
 
         [Fact]
@@ -267,7 +388,7 @@ namespace KosherClouds.ProductService.UnitTests.Services
         }
 
         [Fact]
-        public async Task GetProductsAsync_WithDateRangeFilter_ReturnsProductsInRange()
+        public async Task GetProductsAsync_WithDateRangeFrom_ReturnsRecentProducts()
         {
             // Arrange
             var oldProduct = ProductTestData.CreateValidProduct();
@@ -282,6 +403,34 @@ namespace KosherClouds.ProductService.UnitTests.Services
             var parameters = new ProductParameters
             {
                 CreatedAtFrom = DateTime.UtcNow.AddDays(-10),
+                PageNumber = 1,
+                PageSize = 10
+            };
+
+            // Act
+            var result = await _productService.GetProductsAsync(parameters);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Count.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task GetProductsAsync_WithDateRangeTo_ReturnsOldProducts()
+        {
+            // Arrange
+            var oldProduct = ProductTestData.CreateValidProduct();
+            oldProduct.CreatedAt = DateTime.UtcNow.AddDays(-30);
+
+            var recentProduct = ProductTestData.CreateValidProduct();
+            recentProduct.CreatedAt = DateTime.UtcNow.AddDays(-5);
+
+            await _dbContext.Products.AddRangeAsync(oldProduct, recentProduct);
+            await _dbContext.SaveChangesAsync();
+
+            var parameters = new ProductParameters
+            {
+                CreatedAtTo = DateTime.UtcNow.AddDays(-10),
                 PageNumber = 1,
                 PageSize = 10
             };
@@ -350,6 +499,85 @@ namespace KosherClouds.ProductService.UnitTests.Services
 
         #endregion
 
+        #region GetSubCategoriesAsync Tests
+
+        [Fact]
+        public async Task GetSubCategoriesAsync_ForDishCategory_ReturnsDistinctSubCategories()
+        {
+            // Arrange
+            var product1 = ProductTestData.CreateValidProduct();
+            product1.Category = ProductCategory.Dish;
+            product1.SubCategory = "Main Course";
+            product1.SubCategoryUk = "Основна страва";
+
+            var product2 = ProductTestData.CreateValidProduct();
+            product2.Category = ProductCategory.Dish;
+            product2.SubCategory = "Main Course";
+            product2.SubCategoryUk = "Основна страва";
+
+            var product3 = ProductTestData.CreateValidProduct();
+            product3.Category = ProductCategory.Dish;
+            product3.SubCategory = "Appetizer";
+            product3.SubCategoryUk = "Закуска";
+
+            await _dbContext.Products.AddRangeAsync(product1, product2, product3);
+            await _dbContext.SaveChangesAsync();
+
+            // Act
+            var result = await _productService.GetSubCategoriesAsync(ProductCategory.Dish);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().HaveCount(2);
+            result.Should().Contain(s => s.Value == "Main Course" && s.LabelUk == "Основна страва");
+            result.Should().Contain(s => s.Value == "Appetizer" && s.LabelUk == "Закуска");
+        }
+
+        [Fact]
+        public async Task GetSubCategoriesAsync_ForCategoryWithNoSubCategories_ReturnsEmptyList()
+        {
+            // Arrange
+            var product = ProductTestData.CreateValidProduct();
+            product.Category = ProductCategory.Dessert;
+            product.SubCategory = null;
+
+            await _dbContext.Products.AddAsync(product);
+            await _dbContext.SaveChangesAsync();
+
+            // Act
+            var result = await _productService.GetSubCategoriesAsync(ProductCategory.Dessert);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().BeEmpty();
+        }
+
+        [Fact]
+        public async Task GetSubCategoriesAsync_ReturnsOnlyForSpecifiedCategory()
+        {
+            // Arrange
+            var dishProduct = ProductTestData.CreateValidProduct();
+            dishProduct.Category = ProductCategory.Dish;
+            dishProduct.SubCategory = "Main Course";
+
+            var dessertProduct = ProductTestData.CreateValidProduct();
+            dessertProduct.Category = ProductCategory.Dessert;
+            dessertProduct.SubCategory = "Cake";
+
+            await _dbContext.Products.AddRangeAsync(dishProduct, dessertProduct);
+            await _dbContext.SaveChangesAsync();
+
+            // Act
+            var result = await _productService.GetSubCategoriesAsync(ProductCategory.Dish);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().HaveCount(1);
+            result[0].Value.Should().Be("Main Course");
+        }
+
+        #endregion
+
         #region GetProductByIdAsync Tests
 
         [Fact]
@@ -402,10 +630,108 @@ namespace KosherClouds.ProductService.UnitTests.Services
             result.Price.Should().Be(createRequest.Price);
             result.Category.Should().Be(createRequest.Category);
 
-            // Verify in database
             var productInDb = await _dbContext.Products.FindAsync(result.Id);
             productInDb.Should().NotBeNull();
             productInDb!.Name.Should().Be(createRequest.Name);
+        }
+
+        [Fact]
+        public async Task CreateProductAsync_WithUkrainianFields_CreatesProductWithTranslations()
+        {
+            // Arrange
+            var createRequest = new ProductCreateRequest
+            {
+                Name = "Kugel",
+                NameUk = "Кугель",
+                Description = "Traditional Jewish noodle casserole",
+                DescriptionUk = "Традиційна єврейська запіканка з локшини",
+                Price = 120m,
+                Category = ProductCategory.Dish,
+                SubCategory = "Main Course",
+                SubCategoryUk = "Основна страва"
+            };
+
+            // Act
+            var result = await _productService.CreateProductAsync(createRequest);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.NameUk.Should().Be("Кугель");
+            result.DescriptionUk.Should().Be("Традиційна єврейська запіканка з локшини");
+            result.SubCategoryUk.Should().Be("Основна страва");
+        }
+
+        [Fact]
+        public async Task CreateProductAsync_WithDiscountPrice_CreatesPromotionalProduct()
+        {
+            // Arrange
+            var createRequest = new ProductCreateRequest
+            {
+                Name = "Special Offer Falafel",
+                Description = "Limited time offer",
+                Price = 100m,
+                DiscountPrice = 75m,
+                IsPromotional = true,
+                Category = ProductCategory.Set
+            };
+
+            // Act
+            var result = await _productService.CreateProductAsync(createRequest);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Price.Should().Be(100m);
+            result.DiscountPrice.Should().Be(75m);
+            result.IsPromotional.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task CreateProductAsync_WithIngredientsAndAllergens_CreatesProduct()
+        {
+            // Arrange
+            var createRequest = new ProductCreateRequest
+            {
+                Name = "Kugel",
+                Description = "Noodle casserole",
+                Price = 120m,
+                Category = ProductCategory.Dish,
+                Ingredients = new List<string> { "Noodles", "Eggs", "Cottage Cheese" },
+                IngredientsUk = new List<string> { "Локшина", "Яйця", "Сир" },
+                Allergens = new List<string> { "Gluten", "Dairy", "Eggs" },
+                AllergensUk = new List<string> { "Глютен", "Молочні продукти", "Яйця" }
+            };
+
+            // Act
+            var result = await _productService.CreateProductAsync(createRequest);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Ingredients.Should().HaveCount(3);
+            result.IngredientsUk.Should().HaveCount(3);
+            result.Allergens.Should().HaveCount(3);
+            result.AllergensUk.Should().HaveCount(3);
+        }
+
+        [Fact]
+        public async Task CreateProductAsync_WithMultiplePhotos_CreatesProduct()
+        {
+            // Arrange
+            var createRequest = new ProductCreateRequest
+            {
+                Name = "Deluxe Falafel",
+                Description = "Best falafel in town",
+                Price = 150m,
+                Category = ProductCategory.Set,
+                Photos = new List<string> { "photo1.jpg", "photo2.jpg", "photo3.jpg" }
+            };
+
+            // Act
+            var result = await _productService.CreateProductAsync(createRequest);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Photos.Should().HaveCount(3);
+            result.Photos.Should().Contain("photo1.jpg");
         }
 
         [Fact]
@@ -435,6 +761,7 @@ namespace KosherClouds.ProductService.UnitTests.Services
             var createRequest = new ProductCreateRequest
             {
                 Name = "Minimal Product",
+                Description = "Simple product",
                 Price = 50m,
                 Category = ProductCategory.Dish
             };
@@ -455,13 +782,24 @@ namespace KosherClouds.ProductService.UnitTests.Services
             var createRequest = new ProductCreateRequest
             {
                 Name = "Premium Hookah",
+                Description = "Best hookah experience",
                 Price = 500m,
                 Category = ProductCategory.Hookah,
                 HookahDetails = new HookahDetailsDto
                 {
                     TobaccoFlavor = "Mint",
+                    TobaccoFlavorUk = "М'ята",
                     Strength = HookahStrength.Strong,
-                    BowlType = "Phunnel"
+                    BowlType = "Phunnel",
+                    BowlTypeUk = "Фаннел",
+                    AdditionalParams = new Dictionary<string, string>
+                    {
+                        { "Duration", "90 minutes" }
+                    },
+                    AdditionalParamsUk = new Dictionary<string, string>
+                    {
+                        { "Duration", "90 хвилин" }
+                    }
                 }
             };
 
@@ -472,7 +810,9 @@ namespace KosherClouds.ProductService.UnitTests.Services
             result.Should().NotBeNull();
             result.HookahDetails.Should().NotBeNull();
             result.HookahDetails!.TobaccoFlavor.Should().Be("Mint");
+            result.HookahDetails.TobaccoFlavorUk.Should().Be("М'ята");
             result.HookahDetails.Strength.Should().Be(HookahStrength.Strong);
+            result.HookahDetails.AdditionalParams.Should().ContainKey("Duration");
         }
 
         #endregion
@@ -504,6 +844,105 @@ namespace KosherClouds.ProductService.UnitTests.Services
             updatedProduct.Price.Should().Be(999.99m);
             updatedProduct.IsAvailable.Should().BeFalse();
             updatedProduct.UpdatedAt.Should().NotBeNull();
+        }
+
+        [Fact]
+        public async Task UpdateProductAsync_WithUkrainianFields_UpdatesTranslations()
+        {
+            // Arrange
+            var product = ProductTestData.CreateValidProduct();
+            await _dbContext.Products.AddAsync(product);
+            await _dbContext.SaveChangesAsync();
+
+            var updateRequest = new ProductUpdateRequest
+            {
+                NameUk = "Оновлена назва",
+                DescriptionUk = "Оновлений опис",
+                SubCategoryUk = "Оновлена підкатегорія"
+            };
+
+            // Act
+            await _productService.UpdateProductAsync(product.Id, updateRequest);
+
+            // Assert
+            var updated = await _dbContext.Products.FindAsync(product.Id);
+            updated!.NameUk.Should().Be("Оновлена назва");
+            updated.DescriptionUk.Should().Be("Оновлений опис");
+            updated.SubCategoryUk.Should().Be("Оновлена підкатегорія");
+        }
+
+        [Fact]
+        public async Task UpdateProductAsync_WithDiscountPrice_UpdatesPromotionalStatus()
+        {
+            // Arrange
+            var product = ProductTestData.CreateValidProduct();
+            product.IsPromotional = false;
+            await _dbContext.Products.AddAsync(product);
+            await _dbContext.SaveChangesAsync();
+
+            var updateRequest = new ProductUpdateRequest
+            {
+                DiscountPrice = 80m,
+                IsPromotional = true
+            };
+
+            // Act
+            await _productService.UpdateProductAsync(product.Id, updateRequest);
+
+            // Assert
+            var updated = await _dbContext.Products.FindAsync(product.Id);
+            updated!.DiscountPrice.Should().Be(80m);
+            updated.IsPromotional.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task UpdateProductAsync_WithPhotos_UpdatesPhotosList()
+        {
+            // Arrange
+            var product = ProductTestData.CreateValidProduct();
+            product.Photos = new List<string> { "old1.jpg" };
+            await _dbContext.Products.AddAsync(product);
+            await _dbContext.SaveChangesAsync();
+
+            var updateRequest = new ProductUpdateRequest
+            {
+                Photos = new List<string> { "new1.jpg", "new2.jpg", "new3.jpg" }
+            };
+
+            // Act
+            await _productService.UpdateProductAsync(product.Id, updateRequest);
+
+            // Assert
+            var updated = await _dbContext.Products.FindAsync(product.Id);
+            updated!.Photos.Should().HaveCount(3);
+            updated.Photos.Should().Contain("new1.jpg");
+        }
+
+        [Fact]
+        public async Task UpdateProductAsync_WithIngredientsAndAllergens_UpdatesLists()
+        {
+            // Arrange
+            var product = ProductTestData.CreateValidProduct();
+            await _dbContext.Products.AddAsync(product);
+            await _dbContext.SaveChangesAsync();
+
+            var updateRequest = new ProductUpdateRequest
+            {
+                Ingredients = new List<string> { "New Ingredient 1", "New Ingredient 2" },
+                IngredientsUk = new List<string> { "Новий інгредієнт 1", "Новий інгредієнт 2" },
+                Allergens = new List<string> { "Nuts" },
+                AllergensUk = new List<string> { "Горіхи" }
+            };
+
+            // Act
+            await _productService.UpdateProductAsync(product.Id, updateRequest);
+
+            // Assert
+            var updated = await _dbContext.Products.FindAsync(product.Id);
+            updated!.Ingredients.Should().HaveCount(2);
+            updated.IngredientsUk.Should().HaveCount(2);
+            updated.Allergens.Should().HaveCount(1);
+            updated.AllergensUk.Should().HaveCount(1);
         }
 
         [Fact]
@@ -543,9 +982,9 @@ namespace KosherClouds.ProductService.UnitTests.Services
             // Assert
             var updatedProduct = await _dbContext.Products.FindAsync(product.Id);
             updatedProduct.Should().NotBeNull();
-            updatedProduct!.Name.Should().Be(originalName); // Unchanged
-            updatedProduct.Price.Should().Be(originalPrice); // Unchanged
-            updatedProduct.IsAvailable.Should().BeFalse(); // Updated
+            updatedProduct!.Name.Should().Be(originalName);
+            updatedProduct.Price.Should().Be(originalPrice);
+            updatedProduct.IsAvailable.Should().BeFalse();
         }
 
         [Fact]
@@ -626,6 +1065,36 @@ namespace KosherClouds.ProductService.UnitTests.Services
             updated!.HookahDetails.Should().NotBeNull();
             updated.HookahDetails!.TobaccoFlavor.Should().Be("Apple");
             updated.HookahDetails.Strength.Should().Be(HookahStrength.Light);
+        }
+
+        [Fact]
+        public async Task UpdateProductAsync_ModifyExistingHookahDetails_UpdatesDetails()
+        {
+            // Arrange
+            var product = ProductTestData.CreateHookahProduct();
+            await _dbContext.Products.AddAsync(product);
+            await _dbContext.SaveChangesAsync();
+
+            var updateRequest = new ProductUpdateRequest
+            {
+                HookahDetails = new HookahDetailsDto
+                {
+                    TobaccoFlavor = "Watermelon",
+                    TobaccoFlavorUk = "Кавун",
+                    Strength = HookahStrength.Medium,
+                    BowlType = "Silicone",
+                    BowlTypeUk = "Силіконова"
+                }
+            };
+
+            // Act
+            await _productService.UpdateProductAsync(product.Id, updateRequest);
+
+            // Assert
+            var updated = await _dbContext.Products.FindAsync(product.Id);
+            updated!.HookahDetails.Should().NotBeNull();
+            updated.HookahDetails!.TobaccoFlavor.Should().Be("Watermelon");
+            updated.HookahDetails.TobaccoFlavorUk.Should().Be("Кавун");
         }
 
         [Fact]

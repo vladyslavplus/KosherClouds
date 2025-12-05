@@ -3,6 +3,7 @@ using FluentAssertions;
 using KosherClouds.Contracts.Orders;
 using KosherClouds.OrderService.Data;
 using KosherClouds.OrderService.DTOs.External;
+using KosherClouds.OrderService.DTOs.Order;
 using KosherClouds.OrderService.Entities;
 using KosherClouds.OrderService.Parameters;
 using KosherClouds.OrderService.Services.External;
@@ -183,6 +184,58 @@ namespace KosherClouds.OrderService.UnitTests.Services
             result[0].TotalAmount.Should().Be(500m);
         }
 
+        [Fact]
+        public async Task GetOrdersAsync_WithPaymentTypeFilter_ReturnsMatchingOrders()
+        {
+            // Arrange
+            var onlineOrder = OrderTestData.CreateOrderWithPaymentType(PaymentType.Online);
+            var onPickupOrder = OrderTestData.CreateOrderWithPaymentType(PaymentType.OnPickup);
+
+            await _dbContext.Orders.AddRangeAsync(onlineOrder, onPickupOrder);
+            await _dbContext.SaveChangesAsync();
+
+            var parameters = new OrderParameters
+            {
+                PaymentType = PaymentType.Online,
+                PageNumber = 1,
+                PageSize = 10
+            };
+
+            // Act
+            var result = await _orderService.GetOrdersAsync(parameters);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Count.Should().Be(1);
+            result[0].PaymentType.Should().Be(PaymentType.Online);
+        }
+
+        [Fact]
+        public async Task GetOrdersAsync_WithDateRangeFilter_ReturnsMatchingOrders()
+        {
+            // Arrange
+            var oldOrder = OrderTestData.CreateOldOrder(30);
+            var recentOrder = OrderTestData.CreateOldOrder(5);
+
+            await _dbContext.Orders.AddRangeAsync(oldOrder, recentOrder);
+            await _dbContext.SaveChangesAsync();
+
+            var parameters = new OrderParameters
+            {
+                MinOrderDate = DateTimeOffset.UtcNow.AddDays(-10),
+                MaxOrderDate = DateTimeOffset.UtcNow,
+                PageNumber = 1,
+                PageSize = 10
+            };
+
+            // Act
+            var result = await _orderService.GetOrdersAsync(parameters);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Count.Should().Be(1);
+        }
+
         #endregion
 
         #region GetOrderByIdAsync Tests
@@ -234,9 +287,11 @@ namespace KosherClouds.OrderService.UnitTests.Services
                 products[item.ProductId] = OrderTestData.CreateProductInfo(item.ProductId, true);
             }
 
+            var userInfo = OrderTestData.CreateUserInfo(userId);
+
             _cartApiClientMock.SetupGetCart(userId, cartItems);
             _productApiClientMock.SetupGetProducts(products);
-            _cartApiClientMock.SetupClearCart(userId);
+            _userApiClientMock.SetupGetUser(userId, userInfo);
 
             // Act
             var result = await _orderService.CreateOrderFromCartAsync(userId);
@@ -249,7 +304,7 @@ namespace KosherClouds.OrderService.UnitTests.Services
 
             _cartApiClientMock.Verify(
                 x => x.ClearCartAsync(userId, It.IsAny<CancellationToken>()),
-                Times.Once);
+                Times.Never);
         }
 
         [Fact]
@@ -280,8 +335,11 @@ namespace KosherClouds.OrderService.UnitTests.Services
                 products[item.ProductId] = OrderTestData.CreateProductInfo(item.ProductId, false);
             }
 
+            var userInfo = OrderTestData.CreateUserInfo(userId);
+
             _cartApiClientMock.SetupGetCart(userId, cartItems);
             _productApiClientMock.SetupGetProducts(products);
+            _userApiClientMock.SetupGetUser(userId, userInfo);
 
             // Act
             Func<Task> act = async () => await _orderService.CreateOrderFromCartAsync(userId);
@@ -301,9 +359,12 @@ namespace KosherClouds.OrderService.UnitTests.Services
             var availableProduct = OrderTestData.CreateProductInfo(cartItems[0].ProductId, true);
             var unavailableProduct = OrderTestData.CreateProductInfo(cartItems[1].ProductId, false);
 
+            var userInfo = OrderTestData.CreateUserInfo(userId);
+
             _cartApiClientMock.SetupGetCart(userId, cartItems);
             _productApiClientMock.SetupGetProduct(cartItems[0].ProductId, availableProduct);
             _productApiClientMock.SetupGetProduct(cartItems[1].ProductId, unavailableProduct);
+            _userApiClientMock.SetupGetUser(userId, userInfo);
             _cartApiClientMock.SetupClearCart(userId);
 
             // Act
@@ -313,6 +374,69 @@ namespace KosherClouds.OrderService.UnitTests.Services
             result.Should().NotBeNull();
             result.Items.Should().HaveCount(1);
             result.Items.First().ProductId.Should().Be(cartItems[0].ProductId);
+        }
+
+        [Fact]
+        public async Task CreateOrderFromCartAsync_WithUserWithoutPhoneNumber_ThrowsInvalidOperationException()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var cartItems = OrderTestData.CreateCartItems();
+            var userInfo = OrderTestData.CreateUserInfoWithoutPhone(userId);
+
+            _cartApiClientMock.SetupGetCart(userId, cartItems);
+            _userApiClientMock.SetupGetUser(userId, userInfo);
+
+            // Act
+            Func<Task> act = async () => await _orderService.CreateOrderFromCartAsync(userId);
+
+            // Assert
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("Phone number is required. Please update your profile.");
+        }
+
+        [Fact]
+        public async Task CreateOrderFromCartAsync_WithNonExistentUser_ThrowsInvalidOperationException()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var cartItems = OrderTestData.CreateCartItems();
+
+            _cartApiClientMock.SetupGetCart(userId, cartItems);
+            _userApiClientMock.SetupGetUser(userId, null);
+
+            // Act
+            Func<Task> act = async () => await _orderService.CreateOrderFromCartAsync(userId);
+
+            // Assert
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("Failed to fetch user information");
+        }
+
+        [Fact]
+        public async Task CreateOrderFromCartAsync_WithUkrainianProductNames_CreatesOrderCorrectly()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var cartItems = OrderTestData.CreateCartItems();
+            var userInfo = OrderTestData.CreateUserInfo(userId);
+
+            var product1 = OrderTestData.CreateProductInfoWithUkrainianName(cartItems[0].ProductId, true);
+            var product2 = OrderTestData.CreateProductInfoWithUkrainianName(cartItems[1].ProductId, true);
+
+            _cartApiClientMock.SetupGetCart(userId, cartItems);
+            _userApiClientMock.SetupGetUser(userId, userInfo);
+            _productApiClientMock.SetupGetProduct(cartItems[0].ProductId, product1);
+            _productApiClientMock.SetupGetProduct(cartItems[1].ProductId, product2);
+            _cartApiClientMock.SetupClearCart(userId);
+
+            // Act
+            var result = await _orderService.CreateOrderFromCartAsync(userId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Items.Should().AllSatisfy(item =>
+                item.ProductNameSnapshotUk.Should().NotBeNullOrEmpty());
         }
 
         #endregion
@@ -463,6 +587,35 @@ namespace KosherClouds.OrderService.UnitTests.Services
                 .WithMessage($"Only Draft orders can be confirmed. Current status: {order.Status}");
         }
 
+        [Fact]
+        public async Task ConfirmOrderAsync_UpdatesContactInformation()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var order = OrderTestData.CreateDraftOrder(userId);
+            await _dbContext.Orders.AddAsync(order);
+            await _dbContext.SaveChangesAsync();
+
+            var confirmDto = new OrderConfirmDto
+            {
+                ContactName = "John Doe",
+                ContactPhone = "+380991234567",
+                Notes = "Please call before delivery",
+                PaymentType = PaymentType.OnPickup
+            };
+
+            _cartApiClientMock.SetupClearCart(userId);
+
+            // Act
+            var result = await _orderService.ConfirmOrderAsync(order.Id, userId, confirmDto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.ContactName.Should().Be("John Doe");
+            result.ContactPhone.Should().Be("+380991234567");
+            result.Notes.Should().Be("Please call before delivery");
+        }
+
         #endregion
 
         #region MarkOrderAsPaidAsync Tests
@@ -541,6 +694,29 @@ namespace KosherClouds.OrderService.UnitTests.Services
             // Assert
             await act.Should().ThrowAsync<KeyNotFoundException>()
                 .WithMessage($"Order with ID '{orderId}' not found.");
+        }
+
+        [Fact]
+        public async Task UpdateOrderAsync_WithPartialUpdate_OnlyUpdatesProvidedFields()
+        {
+            // Arrange
+            var order = OrderTestData.CreateValidOrder();
+            var originalNotes = order.Notes;
+            await _dbContext.Orders.AddAsync(order);
+            await _dbContext.SaveChangesAsync();
+
+            var updateDto = new OrderUpdateDto
+            {
+                Status = OrderStatus.Completed
+            };
+
+            // Act
+            await _orderService.UpdateOrderAsync(order.Id, updateDto);
+
+            // Assert
+            var updatedOrder = await _dbContext.Orders.FindAsync(order.Id);
+            updatedOrder!.Status.Should().Be(OrderStatus.Completed);
+            updatedOrder.Notes.Should().Be(originalNotes);
         }
 
         #endregion

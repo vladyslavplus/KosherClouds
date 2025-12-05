@@ -240,5 +240,85 @@ namespace KosherClouds.ReviewService.UnitTests.Helpers
             }
             return dict;
         }
+
+        public static Review CreateReviewWithAllFields()
+        {
+            return new Review
+            {
+                Id = Guid.NewGuid(),
+                ProductId = Guid.NewGuid(),
+                ReviewType = ReviewType.Product,
+                UserId = Guid.NewGuid(),
+                OrderId = Guid.NewGuid(),
+                Rating = 5,
+                Comment = "Excellent product!",
+                IsVerifiedPurchase = true,
+                Status = ReviewStatus.Published,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = null,
+                ModerationNotes = null,
+                ModeratedBy = null,
+                ModeratedAt = null
+            };
+        }
+
+        public static ReviewCreateDto CreateOrderReviewDtoWithRating(Guid orderId, int rating)
+        {
+            return new ReviewCreateDto
+            {
+                OrderId = orderId,
+                ReviewType = ReviewType.Order,
+                ProductId = null,
+                Rating = rating,
+                Comment = $"Order review with rating {rating}"
+            };
+        }
+
+        public static ReviewModerationDto CreateModerationDtoWithNotes(string action, string notes)
+        {
+            return new ReviewModerationDto
+            {
+                Action = action,
+                ModerationNotes = notes
+            };
+        }
+
+        public static List<Review> CreateReviewsWithDifferentStatuses()
+        {
+            return new List<Review>
+            {
+                CreateValidReview(),
+                CreateHiddenReview(),
+                CreateDeletedReview()
+            };
+        }
+
+        public static Review CreateReviewWithRating(int rating)
+        {
+            var review = CreateValidReview();
+            review.Rating = rating;
+            return review;
+        }
+
+        public static OrderDto CreateOrderWithMultipleItems(Guid userId, int itemCount)
+        {
+            var order = CreateValidOrder(userId);
+            order.Items = new List<OrderItemDto>();
+
+            for (int i = 0; i < itemCount; i++)
+            {
+                order.Items.Add(new OrderItemDto
+                {
+                    Id = Guid.NewGuid(),
+                    ProductId = Guid.NewGuid(),
+                    ProductNameSnapshot = $"Product {i + 1}",
+                    ProductNameSnapshotUk = $"Продукт {i + 1}",
+                    Quantity = i + 1,
+                    UnitPriceSnapshot = (i + 1) * 10.00m
+                });
+            }
+
+            return order;
+        }
     }
 }

@@ -162,6 +162,35 @@ namespace KosherClouds.ReviewService.UnitTests.Services
         }
 
         [Fact]
+        public async Task GetReviewsAsync_WithOrderIdFilter_ReturnsMatchingReviews()
+        {
+            // Arrange
+            var orderId = Guid.NewGuid();
+            var review1 = ReviewTestData.CreateReviewForOrder(orderId, Guid.NewGuid());
+            var review2 = ReviewTestData.CreateReviewForOrder(Guid.NewGuid(), Guid.NewGuid());
+
+            await _dbContext.Reviews.AddRangeAsync(review1, review2);
+            await _dbContext.SaveChangesAsync();
+
+            var parameters = new ReviewParameters
+            {
+                OrderId = orderId,
+                PageNumber = 1,
+                PageSize = 10
+            };
+
+            _userApiClientMock.SetupGetUserNamesByIds(new Dictionary<Guid, string>());
+
+            // Act
+            var result = await _reviewService.GetReviewsAsync(parameters);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Count.Should().Be(1);
+            result[0].OrderId.Should().Be(orderId);
+        }
+
+        [Fact]
         public async Task GetReviewsAsync_WithRatingFilter_ReturnsMatchingReviews()
         {
             // Arrange
@@ -251,6 +280,64 @@ namespace KosherClouds.ReviewService.UnitTests.Services
         }
 
         [Fact]
+        public async Task GetReviewsAsync_WithReviewTypeFilter_ReturnsOnlyMatchingType()
+        {
+            // Arrange
+            var productReview1 = ReviewTestData.CreateReviewForProduct(Guid.NewGuid(), Guid.NewGuid());
+            var productReview2 = ReviewTestData.CreateReviewForProduct(Guid.NewGuid(), Guid.NewGuid());
+            var orderReview = ReviewTestData.CreateOrderReview(Guid.NewGuid(), Guid.NewGuid());
+
+            await _dbContext.Reviews.AddRangeAsync(productReview1, productReview2, orderReview);
+            await _dbContext.SaveChangesAsync();
+
+            var parameters = new ReviewParameters
+            {
+                ReviewType = ReviewType.Product.ToString(),
+                PageNumber = 1,
+                PageSize = 10
+            };
+
+            _userApiClientMock.SetupGetUserNamesByIds(new Dictionary<Guid, string>());
+
+            // Act
+            var result = await _reviewService.GetReviewsAsync(parameters);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Count.Should().Be(2);
+            result.Should().AllSatisfy(r => r.ReviewType.Should().Be(ReviewType.Product));
+        }
+
+        [Fact]
+        public async Task GetReviewsAsync_WithDateRangeFilter_ReturnsMatchingReviews()
+        {
+            // Arrange
+            var review1 = ReviewTestData.CreateOldReview(5);
+            var review2 = ReviewTestData.CreateOldReview(10);
+            var review3 = ReviewTestData.CreateOldReview(20);
+
+            await _dbContext.Reviews.AddRangeAsync(review1, review2, review3);
+            await _dbContext.SaveChangesAsync();
+
+            var parameters = new ReviewParameters
+            {
+                MinCreatedDate = DateTimeOffset.UtcNow.AddDays(-12),
+                MaxCreatedDate = DateTimeOffset.UtcNow.AddDays(-4),
+                PageNumber = 1,
+                PageSize = 10
+            };
+
+            _userApiClientMock.SetupGetUserNamesByIds(new Dictionary<Guid, string>());
+
+            // Act
+            var result = await _reviewService.GetReviewsAsync(parameters);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Count.Should().Be(2);
+        }
+
+        [Fact]
         public async Task GetReviewsAsync_PopulatesUserNames()
         {
             // Arrange
@@ -283,8 +370,11 @@ namespace KosherClouds.ReviewService.UnitTests.Services
             await _dbContext.Reviews.AddAsync(review);
             await _dbContext.SaveChangesAsync();
 
-            var user = ReviewTestData.CreateUserDtoWithId(review.UserId);
-            _userApiClientMock.SetupGetUserById(review.UserId, user);
+            var userNames = new Dictionary<Guid, string>
+            {
+                { review.UserId, "John Doe" }
+            };
+            _userApiClientMock.SetupGetUserNamesByIds(userNames);
 
             // Act
             var result = await _reviewService.GetReviewByIdAsync(review.Id);
@@ -292,7 +382,7 @@ namespace KosherClouds.ReviewService.UnitTests.Services
             // Assert
             result.Should().NotBeNull();
             result!.Id.Should().Be(review.Id);
-            result.UserName.Should().Be($"{user.FirstName} {user.LastName}");
+            result.UserName.Should().Be("John Doe");
         }
 
         [Fact]
@@ -309,25 +399,22 @@ namespace KosherClouds.ReviewService.UnitTests.Services
         }
 
         [Fact]
-        public async Task GetReviewByIdAsync_WithUserWithoutFullName_UsesUserName()
+        public async Task GetReviewByIdAsync_WithUserWithoutUserName_ReturnsReviewWithoutUserName()
         {
             // Arrange
             var review = ReviewTestData.CreateValidReview();
             await _dbContext.Reviews.AddAsync(review);
             await _dbContext.SaveChangesAsync();
 
-            var user = ReviewTestData.CreateUserDtoWithId(review.UserId);
-            user.FirstName = null;
-            user.LastName = null;
-
-            _userApiClientMock.SetupGetUserById(review.UserId, user);
+            // No user names in dictionary
+            _userApiClientMock.SetupGetUserNamesByIds(new Dictionary<Guid, string>());
 
             // Act
             var result = await _reviewService.GetReviewByIdAsync(review.Id);
 
             // Assert
             result.Should().NotBeNull();
-            result!.UserName.Should().Be(user.UserName);
+            result!.UserName.Should().BeNull();
         }
 
         #endregion
@@ -373,7 +460,46 @@ namespace KosherClouds.ReviewService.UnitTests.Services
             result.Should().NotBeNull();
             result[0].Products[0].AlreadyReviewed.Should().BeTrue();
             result[0].Products[0].ExistingReviewId.Should().Be(existingReview.Id);
-            result[0].ReviewableProductsCount.Should().Be(1); // Only 1 unreviewed
+            result[0].ReviewableProductsCount.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task GetOrdersToReviewAsync_WithOrderReview_MarksOrderAsReviewed()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var order = ReviewTestData.CreateValidOrder(userId);
+
+            var existingOrderReview = ReviewTestData.CreateOrderReview(order.Id, userId);
+            await _dbContext.Reviews.AddAsync(existingOrderReview);
+            await _dbContext.SaveChangesAsync();
+
+            _orderApiClientMock.SetupGetPaidOrders(userId, new List<OrderDto> { order });
+
+            // Act
+            var result = await _reviewService.GetOrdersToReviewAsync(userId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result[0].OrderReviewExists.Should().BeTrue();
+            result[0].OrderReviewId.Should().Be(existingOrderReview.Id);
+        }
+
+        [Fact]
+        public async Task GetOrdersToReviewAsync_CalculatesDaysLeftCorrectly()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var order = ReviewTestData.CreateValidOrder(userId, daysAgo: 10);
+
+            _orderApiClientMock.SetupGetPaidOrders(userId, new List<OrderDto> { order });
+
+            // Act
+            var result = await _reviewService.GetOrdersToReviewAsync(userId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result[0].DaysLeftToReview.Should().Be(4); // 14 - 10 = 4
         }
 
         [Fact]
@@ -496,6 +622,7 @@ namespace KosherClouds.ReviewService.UnitTests.Services
             var dto = ReviewTestData.CreateValidReviewCreateDto(order.Id, order.Items[0].ProductId);
 
             _orderApiClientMock.SetupGetOrderById(order.Id, order);
+            _userApiClientMock.SetupGetUserNamesByIds(new Dictionary<Guid, string>());
 
             // Act
             var result = await _reviewService.CreateReviewAsync(userId, dto);
@@ -512,6 +639,28 @@ namespace KosherClouds.ReviewService.UnitTests.Services
         }
 
         [Fact]
+        public async Task CreateReviewAsync_WithOrderReview_CreatesSuccessfully()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var order = ReviewTestData.CreateValidOrder(userId);
+            var dto = ReviewTestData.CreateOrderReviewDto(order.Id);
+
+            _orderApiClientMock.SetupGetOrderById(order.Id, order);
+            _userApiClientMock.SetupGetUserNamesByIds(new Dictionary<Guid, string>());
+
+            // Act
+            var result = await _reviewService.CreateReviewAsync(userId, dto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.ReviewType.Should().Be(ReviewType.Order);
+            result.ProductId.Should().BeNull();
+            result.Rating.Should().Be(dto.Rating);
+            result.IsVerifiedPurchase.Should().BeTrue();
+        }
+
+        [Fact]
         public async Task CreateReviewAsync_PublishesReviewCreatedEvent()
         {
             // Arrange
@@ -520,6 +669,7 @@ namespace KosherClouds.ReviewService.UnitTests.Services
             var dto = ReviewTestData.CreateValidReviewCreateDto(order.Id, order.Items[0].ProductId);
 
             _orderApiClientMock.SetupGetOrderById(order.Id, order);
+            _userApiClientMock.SetupGetUserNamesByIds(new Dictionary<Guid, string>());
 
             // Act
             await _reviewService.CreateReviewAsync(userId, dto);
@@ -564,6 +714,92 @@ namespace KosherClouds.ReviewService.UnitTests.Services
             // Assert
             await act.Should().ThrowAsync<UnauthorizedAccessException>()
                 .WithMessage("This order doesn't belong to you");
+        }
+
+        [Fact]
+        public async Task CreateReviewAsync_WithPendingOrder_ThrowsInvalidOperationException()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var order = ReviewTestData.CreatePendingOrder(userId);
+            var dto = ReviewTestData.CreateValidReviewCreateDto(order.Id, order.Items[0].ProductId);
+
+            _orderApiClientMock.SetupGetOrderById(order.Id, order);
+
+            // Act
+            Func<Task> act = async () => await _reviewService.CreateReviewAsync(userId, dto);
+
+            // Assert
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("You can only review paid orders");
+        }
+
+        [Fact]
+        public async Task CreateReviewAsync_WithExpiredReviewPeriod_ThrowsInvalidOperationException()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var order = ReviewTestData.CreateExpiredOrder(userId);
+            var dto = ReviewTestData.CreateValidReviewCreateDto(order.Id, order.Items[0].ProductId);
+
+            _orderApiClientMock.SetupGetOrderById(order.Id, order);
+
+            // Act
+            Func<Task> act = async () => await _reviewService.CreateReviewAsync(userId, dto);
+
+            // Assert
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("Review period has expired (14 days)");
+        }
+
+        [Fact]
+        public async Task CreateReviewAsync_WithOrderReviewHavingProductId_ThrowsInvalidOperationException()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var order = ReviewTestData.CreateValidOrder(userId);
+            var dto = new ReviewCreateDto
+            {
+                OrderId = order.Id,
+                ReviewType = ReviewType.Order,
+                ProductId = Guid.NewGuid(),
+                Rating = 5,
+                Comment = "Test"
+            };
+
+            _orderApiClientMock.SetupGetOrderById(order.Id, order);
+
+            // Act
+            Func<Task> act = async () => await _reviewService.CreateReviewAsync(userId, dto);
+
+            // Assert
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("Order reviews cannot have ProductId");
+        }
+
+        [Fact]
+        public async Task CreateReviewAsync_WithProductReviewMissingProductId_ThrowsInvalidOperationException()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var order = ReviewTestData.CreateValidOrder(userId);
+            var dto = new ReviewCreateDto
+            {
+                OrderId = order.Id,
+                ReviewType = ReviewType.Product,
+                ProductId = null,
+                Rating = 5,
+                Comment = "Test"
+            };
+
+            _orderApiClientMock.SetupGetOrderById(order.Id, order);
+
+            // Act
+            Func<Task> act = async () => await _reviewService.CreateReviewAsync(userId, dto);
+
+            // Assert
+            await act.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("ProductId is required for product reviews");
         }
 
         [Fact]
@@ -621,6 +857,8 @@ namespace KosherClouds.ReviewService.UnitTests.Services
 
             var dto = ReviewTestData.CreateValidReviewUpdateDto();
 
+            _userApiClientMock.SetupGetUserNamesByIds(new Dictionary<Guid, string>());
+
             // Act
             var result = await _reviewService.UpdateReviewAsync(review.Id, review.UserId, dto);
 
@@ -644,6 +882,8 @@ namespace KosherClouds.ReviewService.UnitTests.Services
 
             var dto = new ReviewUpdateDto { Rating = 5 };
 
+            _userApiClientMock.SetupGetUserNamesByIds(new Dictionary<Guid, string>());
+
             // Act
             await _reviewService.UpdateReviewAsync(review.Id, review.UserId, dto);
 
@@ -651,6 +891,32 @@ namespace KosherClouds.ReviewService.UnitTests.Services
             _publishEndpointMock.Verify(
                 x => x.Publish(It.IsAny<ReviewUpdatedEvent>(), default),
                 Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateReviewAsync_WithNoRatingChange_DoesNotPublishEvent()
+        {
+            // Arrange
+            var review = ReviewTestData.CreateValidReview();
+            review.Rating = 5;
+            await _dbContext.Reviews.AddAsync(review);
+            await _dbContext.SaveChangesAsync();
+
+            var dto = new ReviewUpdateDto
+            {
+                Rating = 5,
+                Comment = "Updated comment"
+            };
+
+            _userApiClientMock.SetupGetUserNamesByIds(new Dictionary<Guid, string>());
+
+            // Act
+            await _reviewService.UpdateReviewAsync(review.Id, review.UserId, dto);
+
+            // Assert
+            _publishEndpointMock.Verify(
+                x => x.Publish(It.IsAny<ReviewUpdatedEvent>(), default),
+                Times.Never);
         }
 
         [Fact]
@@ -728,7 +994,7 @@ namespace KosherClouds.ReviewService.UnitTests.Services
         public async Task UpdateReviewAsync_AfterDeadline_ThrowsInvalidOperationException()
         {
             // Arrange
-            var review = ReviewTestData.CreateOldReview(20); // 20 days old
+            var review = ReviewTestData.CreateOldReview(20);
             await _dbContext.Reviews.AddAsync(review);
             await _dbContext.SaveChangesAsync();
 
