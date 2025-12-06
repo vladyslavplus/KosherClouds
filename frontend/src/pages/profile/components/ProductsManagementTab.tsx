@@ -24,7 +24,7 @@ export function ProductsManagementTab() {
     const [editingProduct, setEditingProduct] = useState<ProductResponse | null>(null);
     const [deletingProduct, setDeletingProduct] = useState<string | null>(null);
 
-    const pageSize = 6;
+    const pageSize = 10;
 
     const sortOptions: SelectOption[] = [
         { value: 'createdAt desc', label: t('admin.products.sort.newest') },
@@ -126,8 +126,8 @@ export function ProductsManagementTab() {
                 </Button>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-4 w-full">
-                <div className="flex-1 min-w-[200px]">
+            <div className="flex flex-col sm:flex-row gap-4 w-full">
+                <div className="flex-1 min-w-0">
                     <Input
                         type="text"
                         placeholder={t('admin.products.searchPlaceholder')}
@@ -136,67 +136,65 @@ export function ProductsManagementTab() {
                         bordered
                     />
                 </div>
-
-                <div className="shrink-0 w-[250px]">
+                <div className="w-full sm:w-auto sm:min-w-[250px]">
                     <Select options={sortOptions} value={sortBy} onChange={setSortBy} />
                 </div>
             </div>
 
             <div className="bg-white border border-gray-200 rounded-lg overflow-hidden w-full">
                 <div className="overflow-x-auto">
-                    <table className="w-full table-fixed">
+                    <table className="w-full table-fixed min-w-[640px]">
                         <colgroup>
-                            <col className="w-20 md:w-24" />
-                            <col className="w-auto" />
-                            <col className="hidden md:table-column w-32" />
-                            <col className="w-28 md:w-32" />
-                            <col className="hidden lg:table-column w-36" />
-                            <col className="w-28 md:w-40" />
+                            <col className="w-16 sm:w-20 md:w-24" />
+                            <col className="w-auto min-w-[140px]" />
+                            <col className="hidden md:table-column w-28 lg:w-32" />
+                            <col className="w-24 sm:w-28 md:w-32" />
+                            <col className="hidden lg:table-column w-32 xl:w-36" />
+                            <col className="w-20 sm:w-24 md:w-32 lg:w-36" />
                         </colgroup>
 
                         <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
-                                <th className="px-3 md:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.products.table.photo')}</th>
-                                <th className="px-3 md:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.products.table.name')}</th>
-                                <th className="hidden md:table-cell px-3 md:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.products.table.category')}</th>
-                                <th className="px-3 md:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.products.table.price')}</th>
-                                <th className="hidden lg:table-cell px-3 md:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.products.table.status')}</th>
-                                <th className="px-3 md:px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.products.table.actions')}</th>
+                                <th className="px-2 sm:px-3 md:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.products.table.photo')}</th>
+                                <th className="px-2 sm:px-3 md:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.products.table.name')}</th>
+                                <th className="hidden md:table-cell px-2 sm:px-3 md:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.products.table.category')}</th>
+                                <th className="px-2 sm:px-3 md:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.products.table.price')}</th>
+                                <th className="hidden lg:table-cell px-2 sm:px-3 md:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.products.table.status')}</th>
+                                <th className="px-2 sm:px-3 md:px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.products.table.actions')}</th>
                             </tr>
                         </thead>
 
                         <tbody className="bg-white divide-y divide-gray-200">
                             {products.map((product) => (
                                 <tr key={product.id} className="hover:bg-gray-50">
-                                    <td className="px-3 md:px-4 py-4">
-                                        <LazyImage src={product.photos[0]} alt={product.name} className="w-12 h-12 md:w-16 md:h-16 object-cover rounded" />
+                                    <td className="px-2 sm:px-3 md:px-4 py-3">
+                                        <LazyImage src={product.photos[0]} alt={product.name} className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 object-cover rounded" />
                                     </td>
-                                    <td className="px-3 md:px-4 py-4">
-                                        <div className="text-sm font-medium text-gray-900 truncate">{getProductName(product)}</div>
+                                    <td className="px-2 sm:px-3 md:px-4 py-3">
+                                        <div className="text-xs sm:text-sm font-medium text-gray-900 truncate">{getProductName(product)}</div>
                                         {product.subCategory && (
-                                            <div className="text-xs md:text-sm text-gray-500 truncate">
+                                            <div className="text-[10px] sm:text-xs text-gray-500 truncate">
                                                 {isUk && product.subCategoryUk ? product.subCategoryUk : product.subCategory}
                                             </div>
                                         )}
-                                        <div className="md:hidden text-xs text-gray-500 mt-1 truncate">{getCategoryLabel(product.category)}</div>
+                                        <div className="md:hidden text-[10px] sm:text-xs text-gray-500 mt-1 truncate">{getCategoryLabel(product.category)}</div>
                                     </td>
-                                    <td className="hidden md:table-cell px-3 md:px-4 py-4">
-                                        <span className="text-sm text-gray-900 truncate block">{getCategoryLabel(product.category)}</span>
+                                    <td className="hidden md:table-cell px-2 sm:px-3 md:px-4 py-3">
+                                        <span className="text-xs lg:text-sm text-gray-900 truncate block">{getCategoryLabel(product.category)}</span>
                                     </td>
-                                    <td className="px-3 md:px-4 py-4">
-                                        <div className="text-xs md:text-sm font-medium text-gray-900 tabular-nums">
+                                    <td className="px-2 sm:px-3 md:px-4 py-3">
+                                        <div className="text-xs sm:text-sm font-medium text-gray-900 tabular-nums">
                                             {product.discountPrice ? (
                                                 <div className="flex flex-col">
-                                                    <span className="line-through text-gray-400">{product.price}</span>
+                                                    <span className="line-through text-gray-400 text-[10px] sm:text-xs">{product.price}</span>
                                                     <span className="text-[#8B6914]">{product.discountPrice}</span>
                                                 </div>
                                             ) : (
                                                 <span>{product.price}</span>
                                             )}
-                                            <span className="ml-1">{isUk ? 'грн' : 'uah'}</span>
                                         </div>
                                     </td>
-                                    <td className="hidden lg:table-cell px-3 md:px-4 py-4">
+                                    <td className="hidden lg:table-cell px-2 sm:px-3 md:px-4 py-3">
                                         <div className="flex flex-col gap-1">
                                             {product.isAvailable ? (
                                                 <span className="inline-flex items-center justify-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 whitespace-nowrap">{t('admin.products.status.available')}</span>
@@ -208,35 +206,33 @@ export function ProductsManagementTab() {
                                             )}
                                         </div>
                                     </td>
-                                    <td className="px-3 md:px-4 py-4">
+                                    <td className="px-2 sm:px-3 md:px-4 py-3">
                                         <div className="flex items-center justify-end gap-1">
                                             <button
                                                 onClick={() => handleEdit(product)}
-                                                className="hidden sm:flex items-center gap-1 px-2 py-1.5 text-xs text-gray-600 hover:bg-gray-100 rounded border border-gray-300 transition-colors whitespace-nowrap min-w-[60px] justify-center"
+                                                className="p-1.5 sm:p-2 text-gray-600 hover:bg-gray-100 rounded border border-gray-300 transition-colors"
+                                                title={t('admin.products.actions.edit')}
                                             >
-                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                 </svg>
-                                                <span>{t('admin.products.actions.edit')}</span>
                                             </button>
 
                                             <button
                                                 onClick={() => handleDelete(product.id)}
                                                 disabled={deletingProduct === product.id}
-                                                className="hidden sm:flex items-center gap-1 px-2 py-1.5 text-xs text-red-600 hover:bg-red-50 rounded border border-red-600 transition-colors whitespace-nowrap min-w-[70px] justify-center"
+                                                className="p-1.5 sm:p-2 text-red-600 hover:bg-red-50 rounded border border-red-600 transition-colors disabled:opacity-50"
+                                                title={t('admin.products.actions.delete')}
                                             >
                                                 {deletingProduct === product.id ? (
-                                                    <svg className="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+                                                    <svg className="animate-spin w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24">
                                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                                     </svg>
                                                 ) : (
-                                                    <>
-                                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                        </svg>
-                                                        <span>{t('admin.products.actions.delete')}</span>
-                                                    </>
+                                                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
                                                 )}
                                             </button>
                                         </div>
@@ -247,6 +243,12 @@ export function ProductsManagementTab() {
                     </table>
                 </div>
             </div>
+
+            {products.length === 0 && !loading && (
+                <div className="text-center py-12 text-gray-600">
+                    {t('admin.products.noProducts')}
+                </div>
+            )}
 
             <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
 

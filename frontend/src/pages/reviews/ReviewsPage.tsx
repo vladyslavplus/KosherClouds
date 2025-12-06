@@ -40,38 +40,56 @@ export default function ReviewsPage() {
   }, []);
 
   useEffect(() => {
-    const loadReviews = async () => {
-      try {
-        setIsFetching(true);
+    loadOverallStatistics();
+  }, []);
 
-        const response = await reviewsApi.getReviews({
-          reviewType: ReviewType.Order,
-          status: ReviewStatus.Published,
-          orderBy: sortBy,
-          pageNumber: currentPage,
-          pageSize: pageSize,
-        });
-
-        setReviews(response.data);
-        setTotalReviews(response.pagination.totalCount);
-        setTotalPages(response.pagination.totalPages);
-
-        if (response.data.length > 0) {
-          const avgRating =
-            response.data.reduce((sum, review) => sum + review.rating, 0) /
-            response.data.length;
-          setAverageRating(avgRating);
-        }
-      } catch (error) {
-        console.error('Error loading reviews:', error);
-      } finally {
-        setIsFetching(false);
-        setIsInitialLoad(false);
-      }
-    };
-
+  useEffect(() => {
     loadReviews();
   }, [sortBy, currentPage, pageSize]);
+
+  const loadOverallStatistics = async () => {
+    try {
+      const response = await reviewsApi.getReviews({
+        reviewType: ReviewType.Order,
+        status: ReviewStatus.Published,
+        pageNumber: 1,
+        pageSize: 9999,
+      });
+
+      setTotalReviews(response.pagination.totalCount);
+
+      if (response.data.length > 0) {
+        const avgRating =
+          response.data.reduce((sum, review) => sum + review.rating, 0) /
+          response.data.length;
+        setAverageRating(avgRating);
+      }
+    } catch (error) {
+      console.error('Error loading statistics:', error);
+    }
+  };
+
+  const loadReviews = async () => {
+    try {
+      setIsFetching(true);
+
+      const response = await reviewsApi.getReviews({
+        reviewType: ReviewType.Order,
+        status: ReviewStatus.Published,
+        orderBy: sortBy,
+        pageNumber: currentPage,
+        pageSize: pageSize,
+      });
+
+      setReviews(response.data);
+      setTotalPages(response.pagination.totalPages);
+    } catch (error) {
+      console.error('Error loading reviews:', error);
+    } finally {
+      setIsFetching(false);
+      setIsInitialLoad(false);
+    }
+  };
 
   const handleSortChange = (value: string) => {
     setSortBy(value);
