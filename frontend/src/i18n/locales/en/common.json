@@ -317,5 +317,102 @@
     "loading": "Loading...",
     "noImage": "No Image",
     "close": "Close"
+  },
+  "admin": {
+    "tabs": {
+      "products": "Menu Management",
+      "orders": "Orders Management",
+      "bookings": "Bookings Management"
+    },
+    "products": {
+      "title": "Menu Management",
+      "addProduct": "Add Product",
+      "searchPlaceholder": "Search by name...",
+      "table": {
+        "photo": "Photo",
+        "name": "Name",
+        "category": "Category",
+        "price": "Price",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "available": "Available",
+        "unavailable": "Unavailable",
+        "promotional": "Promotional"
+      },
+      "actions": {
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "deleteConfirm": "Are you sure you want to delete this product?",
+      "deleteError": "Error deleting product",
+      "noProducts": "No products found",
+      "categories": {
+        "all": "All Categories",
+        "dish": "Dish",
+        "set": "Set",
+        "dessert": "Dessert",
+        "drink": "Drink",
+        "hookah": "Hookah"
+      },
+      "sort": {
+        "newest": "Newest",
+        "oldest": "Oldest",
+        "nameAsc": "Name: A-Z",
+        "nameDesc": "Name: Z-A",
+        "priceAsc": "Price: Low to High",
+        "priceDesc": "Price: High to Low"
+      }
+    },
+    "productForm": {
+      "titleCreate": "New Product",
+      "titleEdit": "Edit Product",
+      "nameEn": "Name (EN)",
+      "nameUk": "Name (UK)",
+      "descriptionEn": "Description (EN)",
+      "descriptionUk": "Description (UK)",
+      "price": "Price (UAH)",
+      "discountPrice": "Discount Price (UAH)",
+      "promotional": "Promotional Product",
+      "category": "Category",
+      "vegetarian": "Vegetarian",
+      "subCategoryEn": "Subcategory (EN)",
+      "subCategoryUk": "Subcategory (UK)",
+      "ingredientsEn": "Ingredients (EN, comma separated)",
+      "ingredientsUk": "Ingredients (UK, comma separated)",
+      "allergensEn": "Allergens (EN, comma separated)",
+      "allergensUk": "Allergens (UK, comma separated)",
+      "photos": "Photos",
+      "photoUploadMethod": "Upload Method",
+      "uploadByUrl": "Upload by URL",
+      "uploadFiles": "Upload Files",
+      "photoUrlsPlaceholder": "Enter photo URLs separated by commas",
+      "selectFiles": "Select files",
+      "uploadButton": "Upload",
+      "uploading": "Uploading...",
+      "removePhoto": "Remove photo",
+      "noPhotos": "No photos uploaded",
+      "photosRequired": "At least one photo is required",
+      "available": "Available for order",
+      "options": "Options",
+      "hookahDetails": "Hookah Details",
+      "tobaccoFlavorEn": "Tobacco Flavor (EN)",
+      "tobaccoFlavorUk": "Tobacco Flavor (UK)",
+      "strength": "Strength",
+      "strengthLevels": {
+        "light": "Light",
+        "medium": "Medium",
+        "strong": "Strong"
+      },
+      "bowlTypeEn": "Bowl Type (EN)",
+      "bowlTypeUk": "Bowl Type (UK)",
+      "cancel": "Cancel",
+      "create": "Create Product",
+      "save": "Save Changes",
+      "error": "Error saving product",
+      "uploadError": "Error uploading photos"
+    },
+    "inDevelopment": "In development"
   }
 }

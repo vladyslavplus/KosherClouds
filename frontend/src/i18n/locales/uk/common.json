@@ -319,5 +319,102 @@
     "loading": "Завантаження...",
     "noImage": "Немає зображення",
     "close": "Закрити"
+  },
+  "admin": {
+    "tabs": {
+      "products": "Управління меню",
+      "orders": "Управління замовленнями",
+      "bookings": "Управління бронюваннями"
+    },
+    "products": {
+      "title": "Управління меню",
+      "addProduct": "Додати продукт",
+      "searchPlaceholder": "Пошук за назвою...",
+      "table": {
+        "photo": "Фото",
+        "name": "Назва",
+        "category": "Категорія",
+        "price": "Ціна",
+        "status": "Статус",
+        "actions": "Дії"
+      },
+      "status": {
+        "available": "Доступний",
+        "unavailable": "Недоступний",
+        "promotional": "Акція"
+      },
+      "actions": {
+        "edit": "Редагувати",
+        "delete": "Видалити"
+      },
+      "deleteConfirm": "Ви впевнені, що хочете видалити цей продукт?",
+      "deleteError": "Помилка при видаленні продукту",
+      "noProducts": "Продукти не знайдено",
+      "categories": {
+        "all": "Всі категорії",
+        "dish": "Страва",
+        "set": "Сет",
+        "dessert": "Десерт",
+        "drink": "Напій",
+        "hookah": "Кальян"
+      },
+      "sort": {
+        "newest": "Найновіші",
+        "oldest": "Найстаріші",
+        "nameAsc": "Назва: А-Я",
+        "nameDesc": "Назва: Я-А",
+        "priceAsc": "Ціна: за зростанням",
+        "priceDesc": "Ціна: за спаданням"
+      }
+    },
+    "productForm": {
+      "titleCreate": "Новий продукт",
+      "titleEdit": "Редагування продукту",
+      "nameEn": "Назва (EN)",
+      "nameUk": "Назва (UK)",
+      "descriptionEn": "Опис (EN)",
+      "descriptionUk": "Опис (UK)",
+      "price": "Ціна (грн)",
+      "discountPrice": "Ціна зі знижкою (грн)",
+      "promotional": "Акційний товар",
+      "category": "Категорія",
+      "vegetarian": "Вегетаріанське",
+      "subCategoryEn": "Підкатегорія (EN)",
+      "subCategoryUk": "Підкатегорія (UK)",
+      "ingredientsEn": "Інгредієнти (EN, через кому)",
+      "ingredientsUk": "Інгредієнти (UK, через кому)",
+      "allergensEn": "Алергени (EN, через кому)",
+      "allergensUk": "Алергени (UK, через кому)",
+      "photos": "Фотографії",
+      "photoUploadMethod": "Спосіб завантаження",
+      "uploadByUrl": "Завантажити за URL",
+      "uploadFiles": "Завантажити файли",
+      "photoUrlsPlaceholder": "Введіть URL фото через кому",
+      "selectFiles": "Оберіть файли",
+      "uploadButton": "Завантажити",
+      "uploading": "Завантаження...",
+      "removePhoto": "Видалити фото",
+      "noPhotos": "Фото не завантажено",
+      "photosRequired": "Потрібно хоча б одне фото",
+      "available": "Доступний для замовлення",
+      "options": "Опції",
+      "hookahDetails": "Деталі кальяну",
+      "tobaccoFlavorEn": "Смак тютюну (EN)",
+      "tobaccoFlavorUk": "Смак тютюну (UK)",
+      "strength": "Міцність",
+      "strengthLevels": {
+        "light": "Легкий",
+        "medium": "Середній",
+        "strong": "Міцний"
+      },
+      "bowlTypeEn": "Тип чаші (EN)",
+      "bowlTypeUk": "Тип чаші (UK)",
+      "cancel": "Скасувати",
+      "create": "Створити продукт",
+      "save": "Зберегти зміни",
+      "error": "Помилка при збереженні продукту",
+      "uploadError": "Помилка завантаження фото"
+    },
+    "inDevelopment": "В розробці"
   }
 }

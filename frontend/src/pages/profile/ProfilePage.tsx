@@ -9,6 +9,7 @@ import { Button } from '../../shared/ui/Button';
 import { EditableField } from '@/shared/components/EditableField';
 import { OrdersTab } from './components/OrdersTab';
 import { BookingsTab } from './components/BookingsTab';
+import { AdminTab } from './components/AdminTab';
 
 export function ProfilePage() {
   const { t } = useTranslation();
@@ -336,12 +337,7 @@ export function ProfilePage() {
 
             {activeTab === 'bookings' && <BookingsTab />}
 
-            {activeTab === 'admin' && isAdmin && (
-              <div className="max-w-2xl mx-auto">
-                <h2 className="text-2xl font-heading font-bold mb-6">{t('profile.adminPanel')}</h2>
-                <p className="text-gray-600">{t('profile.adminPlaceholder')}</p>
-              </div>
-            )}
+            {activeTab === 'admin' && isAdmin && <AdminTab />}
           </main>
         </div>
       </div>
