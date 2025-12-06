@@ -31,10 +31,15 @@ export enum HookahStrength {
 }
 
 export interface HookahBookingDto {
+  productId?: string;
+  productName?: string;
+  productNameUk?: string;
   tobaccoFlavor: string;
+  tobaccoFlavorUk?: string;
   strength: HookahStrength;
   serveAfterMinutes?: number | null;
   notes?: string | null;
+  priceSnapshot?: number;
 }
 
 export interface BookingCreateDto {

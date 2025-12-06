@@ -8,13 +8,6 @@ import { Input } from '@/shared/ui/Input';
 import { Select, SelectOption } from '@/shared/ui/Select';
 import { HookahModal } from './components/HookahModal';
 
-interface ExtendedHookahBooking extends HookahBookingDto {
-  price: number;
-  productId: string;
-  productName: string;
-  productNameUk?: string;
-}
-
 function BookingPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -27,7 +20,7 @@ function BookingPage() {
     zone: BookingZone;
     phoneNumber: string;
     comment: string;
-    hookahs: ExtendedHookahBooking[];
+    hookahs: (HookahBookingDto & { price: number })[];
   }>({
     bookingDateTime: '',
     adults: 1,
@@ -107,18 +100,22 @@ function BookingPage() {
         zone: formData.zone,
         phoneNumber: formData.phoneNumber,
         comment: formData.comment || null,
-        hookahs: formData.hookahs && formData.hookahs.length > 0
+        hookahs: formData.hookahs.length > 0
           ? formData.hookahs.map(h => ({
+            productId: h.productId,
+            productName: h.productName,
+            productNameUk: h.productNameUk,
             tobaccoFlavor: h.tobaccoFlavor,
+            tobaccoFlavorUk: h.tobaccoFlavorUk,
             strength: h.strength,
             serveAfterMinutes: h.serveAfterMinutes,
             notes: h.notes,
+            priceSnapshot: h.priceSnapshot,
           }))
           : undefined,
       };
 
       await bookingsApi.createBooking(bookingData);
-
       navigate('/profile', { state: { tab: 'bookings' } });
 
     } catch (err: any) {
@@ -128,7 +125,7 @@ function BookingPage() {
     }
   };
 
-  const handleAddHookah = (hookah: ExtendedHookahBooking) => {
+  const handleAddHookah = (hookah: HookahBookingDto & { price: number }) => {
     setFormData(prev => ({
       ...prev,
       hookahs: [...prev.hookahs, hookah],
@@ -144,6 +141,16 @@ function BookingPage() {
   };
 
   const totalHookahPrice = formData.hookahs.reduce((sum, h) => sum + h.price, 0);
+
+  const getHookahDisplayName = (hookah: HookahBookingDto & { price: number }): string => {
+    if (isUk && hookah.productNameUk) return hookah.productNameUk;
+    return hookah.productName || hookah.tobaccoFlavor;
+  };
+
+  const getHookahDisplayFlavor = (hookah: HookahBookingDto & { price: number }): string => {
+    if (isUk && hookah.tobaccoFlavorUk) return hookah.tobaccoFlavorUk;
+    return hookah.tobaccoFlavor;
+  };
 
   return (
     <main className="grow py-8">
@@ -281,14 +288,19 @@ function BookingPage() {
                     <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
                       <div className="flex-1">
                         <p className="font-medium">
-                          {isUk && hookah.productNameUk ? hookah.productNameUk : hookah.productName}
+                          {getHookahDisplayName(hookah)}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {getHookahDisplayFlavor(hookah)}
                         </p>
                         <p className="text-sm text-gray-600">
                           {t('booking.strength')}: {t(`booking.strengthLevels.${hookah.strength.toLowerCase()}`)}
                         </p>
-                        <p className="text-sm text-gray-600">
-                          {t('booking.serveAfter')}: {hookah.serveAfterMinutes && hookah.serveAfterMinutes > 0 ? `${hookah.serveAfterMinutes} ${t('booking.minutes')}` : t('booking.immediately')}
-                        </p>
+                        {hookah.serveAfterMinutes != null && hookah.serveAfterMinutes > 0 && (
+                          <p className="text-sm text-gray-600">
+                            {t('booking.serveAfter')}: {hookah.serveAfterMinutes} {t('booking.minutes')}
+                          </p>
+                        )}
                         {hookah.notes && (
                           <p className="text-sm text-gray-600">{hookah.notes}</p>
                         )}

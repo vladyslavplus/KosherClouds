@@ -8,17 +8,10 @@ import { Input } from '@/shared/ui/Input';
 import { LazyImage } from '@/shared/components/LazyImage';
 import CloseIcon from '@/assets/icons/close.svg?react';
 
-interface ExtendedHookahBooking extends HookahBookingDto {
-  price: number;
-  productId: string;
-  productName: string;
-  productNameUk?: string;
-}
-
 interface HookahModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (hookah: ExtendedHookahBooking) => void;
+  onConfirm: (hookah: HookahBookingDto & { price: number }) => void;
 }
 
 export const HookahModal = ({ isOpen, onClose, onConfirm }: HookahModalProps) => {
@@ -63,19 +56,19 @@ export const HookahModal = ({ isOpen, onClose, onConfirm }: HookahModalProps) =>
   const handleConfirm = () => {
     if (!selectedHookah || !selectedHookah.hookahDetails) return;
 
-    const minutes = serveAfterMinutes === '' ? 0 : parseInt(serveAfterMinutes);
+    const minutes = serveAfterMinutes === '' ? null : parseInt(serveAfterMinutes);
 
-    const hookahData: ExtendedHookahBooking = {
-      tobaccoFlavor: isUk 
-        ? selectedHookah.hookahDetails.tobaccoFlavorUk || selectedHookah.hookahDetails.tobaccoFlavor 
-        : selectedHookah.hookahDetails.tobaccoFlavor,
-      strength,
-      serveAfterMinutes: minutes > 0 ? minutes : null,
-      notes: notes.trim() || null,
-      price: selectedHookah.discountPrice || selectedHookah.price,
+    const hookahData: HookahBookingDto & { price: number } = {
       productId: selectedHookah.id,
       productName: selectedHookah.name,
       productNameUk: selectedHookah.nameUk || undefined,
+      tobaccoFlavor: selectedHookah.hookahDetails.tobaccoFlavor,
+      tobaccoFlavorUk: selectedHookah.hookahDetails.tobaccoFlavorUk || undefined,
+      strength,
+      serveAfterMinutes: minutes,
+      notes: notes.trim() || null,
+      priceSnapshot: selectedHookah.discountPrice || selectedHookah.price,
+      price: selectedHookah.discountPrice || selectedHookah.price,
     };
 
     onConfirm(hookahData);
@@ -147,16 +140,16 @@ export const HookahModal = ({ isOpen, onClose, onConfirm }: HookahModalProps) =>
                         />
                         <div className="flex-1">
                           <p className="font-medium">
-                            {isUk ? hookah.nameUk || hookah.name : hookah.name}
+                            {isUk && hookah.nameUk ? hookah.nameUk : hookah.name}
                           </p>
                           <p className="text-sm text-gray-600">
                             {hookah.hookahDetails && (
-                              isUk 
-                                ? hookah.hookahDetails.tobaccoFlavorUk || hookah.hookahDetails.tobaccoFlavor
+                              isUk && hookah.hookahDetails.tobaccoFlavorUk
+                                ? hookah.hookahDetails.tobaccoFlavorUk
                                 : hookah.hookahDetails.tobaccoFlavor
                             )}
                           </p>
-                          <p className="text-sm font-semibold text-secondary mt-1">
+                          <p className="text-sm font-semibold text-secondary mt-1 tabular-nums">
                             {hookah.discountPrice || hookah.price} {isUk ? 'грн' : 'uah'}
                           </p>
                         </div>
@@ -212,9 +205,9 @@ export const HookahModal = ({ isOpen, onClose, onConfirm }: HookahModalProps) =>
 
                   <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                     <p className="text-lg font-semibold">
-                      {t('booking.selected')}: {isUk ? selectedHookah.nameUk || selectedHookah.name : selectedHookah.name}
+                      {t('booking.selected')}: {isUk && selectedHookah.nameUk ? selectedHookah.nameUk : selectedHookah.name}
                     </p>
-                    <p className="text-2xl font-bold text-secondary mt-2">
+                    <p className="text-2xl font-bold text-secondary mt-2 tabular-nums">
                       {selectedHookah.discountPrice || selectedHookah.price} {isUk ? 'грн' : 'uah'}
                     </p>
                   </div>
