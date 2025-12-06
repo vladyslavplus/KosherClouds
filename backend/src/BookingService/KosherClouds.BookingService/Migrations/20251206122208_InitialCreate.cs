@@ -37,10 +37,15 @@ namespace KosherClouds.BookingService.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ProductName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    ProductNameUk = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     TobaccoFlavor = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    TobaccoFlavorUk = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     Strength = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     ServeAfterMinutes = table.Column<int>(type: "integer", nullable: true),
                     Notes = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    PriceSnapshot = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: false),
                     BookingId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
@@ -83,6 +88,11 @@ namespace KosherClouds.BookingService.Migrations
                 name: "IX_Hookahs_BookingId",
                 table: "Hookahs",
                 column: "BookingId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Hookahs_ProductId",
+                table: "Hookahs",
+                column: "ProductId");
         }
 
         /// <inheritdoc />

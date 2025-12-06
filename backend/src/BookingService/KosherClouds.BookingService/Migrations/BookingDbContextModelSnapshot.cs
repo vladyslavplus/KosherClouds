@@ -100,6 +100,22 @@ namespace KosherClouds.BookingService.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<decimal>("PriceSnapshot")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<Guid?>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ProductNameUk")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<int?>("ServeAfterMinutes")
                         .HasColumnType("integer");
 
@@ -113,10 +129,17 @@ namespace KosherClouds.BookingService.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("TobaccoFlavorUk")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BookingId")
                         .HasDatabaseName("IX_Hookahs_BookingId");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("IX_Hookahs_ProductId");
 
                     b.ToTable("Hookahs");
                 });

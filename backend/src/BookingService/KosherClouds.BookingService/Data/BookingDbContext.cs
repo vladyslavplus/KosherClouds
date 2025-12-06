@@ -66,6 +66,9 @@ namespace KosherClouds.BookingService.Data
                 entity.HasIndex(h => h.BookingId)
                     .HasDatabaseName("IX_Hookahs_BookingId");
 
+                entity.HasIndex(h => h.ProductId)
+                    .HasDatabaseName("IX_Hookahs_ProductId");
+
                 entity.HasOne(h => h.Booking)
                     .WithMany(b => b.Hookahs)
                     .HasForeignKey(h => h.BookingId)
@@ -76,8 +79,21 @@ namespace KosherClouds.BookingService.Data
                     .HasMaxLength(50)
                     .IsRequired();
 
+                entity.Property(h => h.ProductId)
+                    .IsRequired(false);
+
+                entity.Property(h => h.ProductName)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.Property(h => h.ProductNameUk)
+                    .HasMaxLength(100);
+
                 entity.Property(h => h.TobaccoFlavor)
                     .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.Property(h => h.TobaccoFlavorUk)
                     .HasMaxLength(100);
 
                 entity.Property(h => h.Notes)
@@ -85,6 +101,10 @@ namespace KosherClouds.BookingService.Data
 
                 entity.Property(h => h.ServeAfterMinutes)
                     .IsRequired(false);
+
+                entity.Property(h => h.PriceSnapshot)
+                    .HasPrecision(10, 2)
+                    .IsRequired();
             });
 
             base.OnModelCreating(modelBuilder);

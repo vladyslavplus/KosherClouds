@@ -191,10 +191,15 @@ namespace KosherClouds.BookingService.Services
                 {
                     booking.Hookahs.Add(new HookahBooking
                     {
+                        ProductId = hookahDto.ProductId,
+                        ProductName = hookahDto.ProductName ?? "Unknown",
+                        ProductNameUk = hookahDto.ProductNameUk,
                         TobaccoFlavor = hookahDto.TobaccoFlavor,
+                        TobaccoFlavorUk = hookahDto.TobaccoFlavorUk,
                         Strength = Enum.Parse<HookahStrength>(hookahDto.Strength, true),
                         ServeAfterMinutes = hookahDto.ServeAfterMinutes,
-                        Notes = hookahDto.Notes
+                        Notes = hookahDto.Notes,
+                        PriceSnapshot = hookahDto.PriceSnapshot ?? 0m
                     });
                 }
             }
