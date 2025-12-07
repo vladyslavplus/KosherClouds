@@ -22,6 +22,10 @@
 	  <ProjectReference Include="..\..\..\shared\KosherClouds.ServiceDefaults\KosherClouds.ServiceDefaults.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<InternalsVisibleTo Include="KosherClouds.CartService.IntegrationTests" />
+	</ItemGroup>
+
 	<ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 
 </Project>
