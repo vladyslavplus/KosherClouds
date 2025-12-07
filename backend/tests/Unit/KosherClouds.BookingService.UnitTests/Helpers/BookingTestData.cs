@@ -11,6 +11,8 @@ namespace KosherClouds.BookingService.UnitTests.Helpers
 
         public static Guid CreateUserId() => Guid.NewGuid();
 
+        public static Guid CreateProductId() => Guid.NewGuid();
+
         public static Booking CreateValidBooking(Guid? userId = null, DateTime? bookingDateTime = null)
         {
             var booking = new Booking
@@ -86,7 +88,7 @@ namespace KosherClouds.BookingService.UnitTests.Helpers
         public static BookingCreateDto CreateBookingWithHookahs(int hookahCount = 2)
         {
             var dto = CreateValidBookingCreateDto();
-            dto.Hookahs = CreateHookahList(hookahCount);
+            dto.Hookahs = CreateHookahDtoList(hookahCount);
             return dto;
         }
 
@@ -106,16 +108,24 @@ namespace KosherClouds.BookingService.UnitTests.Helpers
 
         public static HookahBookingDto CreateValidHookahDto()
         {
+            var productName = _faker.Commerce.ProductName();
+            var tobaccoFlavor = _faker.Commerce.ProductAdjective();
+
             return new HookahBookingDto
             {
-                TobaccoFlavor = _faker.Commerce.ProductName(),
+                ProductId = CreateProductId(),
+                ProductName = productName,
+                ProductNameUk = $"{productName} (УК)",
+                TobaccoFlavor = tobaccoFlavor,
+                TobaccoFlavorUk = $"{tobaccoFlavor} (УК)",
                 Strength = "Medium",
                 ServeAfterMinutes = _faker.Random.Int(0, 120),
-                Notes = _faker.Lorem.Sentence()
+                Notes = _faker.Lorem.Sentence(),
+                PriceSnapshot = _faker.Random.Decimal(100, 500)
             };
         }
 
-        public static List<HookahBookingDto> CreateHookahList(int count)
+        public static List<HookahBookingDto> CreateHookahDtoList(int count)
         {
             var hookahs = new List<HookahBookingDto>();
             for (int i = 0; i < count; i++)
@@ -127,14 +137,22 @@ namespace KosherClouds.BookingService.UnitTests.Helpers
 
         public static HookahBooking CreateValidHookahBooking(Guid bookingId)
         {
+            var productName = _faker.Commerce.ProductName();
+            var tobaccoFlavor = _faker.Commerce.ProductAdjective();
+
             return new HookahBooking
             {
                 Id = Guid.NewGuid(),
                 BookingId = bookingId,
-                TobaccoFlavor = _faker.Commerce.ProductName(),
+                ProductId = CreateProductId(),
+                ProductName = productName,
+                ProductNameUk = $"{productName} (УК)",
+                TobaccoFlavor = tobaccoFlavor,
+                TobaccoFlavorUk = $"{tobaccoFlavor} (УК)",
                 Strength = HookahStrength.Medium,
                 ServeAfterMinutes = _faker.Random.Int(0, 120),
-                Notes = _faker.Lorem.Sentence()
+                Notes = _faker.Lorem.Sentence(),
+                PriceSnapshot = _faker.Random.Decimal(100, 500)
             };
         }
 
@@ -171,7 +189,8 @@ namespace KosherClouds.BookingService.UnitTests.Helpers
 
         public static DateTime GetBookingDateTimeTooFarInFuture()
         {
-            return DateTime.UtcNow.AddDays(70);
+            var futureDate = DateTime.UtcNow.AddDays(70);
+            return new DateTime(futureDate.Year, futureDate.Month, futureDate.Day, 14, 0, 0, DateTimeKind.Utc);
         }
 
         public static DateTime GetPastBookingDateTime()

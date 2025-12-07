@@ -8,6 +8,7 @@ using KosherClouds.BookingService.UnitTests.Helpers;
 using KosherClouds.Contracts.Bookings;
 using KosherClouds.ServiceDefaults.Helpers;
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using BookingServiceClass = KosherClouds.BookingService.Services.BookingService;
 
@@ -313,6 +314,71 @@ namespace KosherClouds.BookingService.UnitTests.Services
             result!.Hookahs.Should().HaveCount(2);
         }
 
+        [Fact]
+        public async Task GetBookingByIdAsync_WithHookahsIncludingUkrainianFields_ReturnsAllFields()
+        {
+            // Arrange
+            var userId = BookingTestData.CreateUserId();
+            var booking = BookingTestData.CreateValidBooking(userId);
+
+            var hookah = new HookahBooking
+            {
+                Id = Guid.NewGuid(),
+                BookingId = booking.Id,
+                ProductId = BookingTestData.CreateProductId(),
+                ProductName = "Fresh Mint",
+                ProductNameUk = "Свіжа м'ята",
+                TobaccoFlavor = "Mint",
+                TobaccoFlavorUk = "М'ята",
+                Strength = HookahStrength.Light,
+                ServeAfterMinutes = 15,
+                Notes = "Special request",
+                PriceSnapshot = 250m
+            };
+
+            booking.Hookahs.Add(hookah);
+            await _dbContext.Bookings.AddAsync(booking);
+            await _dbContext.SaveChangesAsync();
+
+            // Act
+            var result = await _bookingService.GetBookingByIdAsync(booking.Id, userId, isAdminOrManager: false);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.Hookahs.Should().HaveCount(1);
+
+            var resultHookah = result.Hookahs[0];
+            resultHookah.ProductId.Should().Be(hookah.ProductId);
+            resultHookah.ProductName.Should().Be("Fresh Mint");
+            resultHookah.ProductNameUk.Should().Be("Свіжа м'ята");
+            resultHookah.TobaccoFlavor.Should().Be("Mint");
+            resultHookah.TobaccoFlavorUk.Should().Be("М'ята");
+            resultHookah.Strength.Should().Be("Light");
+            resultHookah.ServeAfterMinutes.Should().Be(15);
+            resultHookah.Notes.Should().Be("Special request");
+            resultHookah.PriceSnapshot.Should().Be(250m);
+        }
+
+        [Fact]
+        public async Task GetBookingByIdAsync_PastBooking_ComputedPropertiesCorrect()
+        {
+            // Arrange
+            var userId = BookingTestData.CreateUserId();
+            var booking = BookingTestData.CreateCompletedBooking(userId);
+            await _dbContext.Bookings.AddAsync(booking);
+            await _dbContext.SaveChangesAsync();
+
+            // Act
+            var result = await _bookingService.GetBookingByIdAsync(booking.Id, userId, isAdminOrManager: false);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.IsUpcoming.Should().BeFalse();
+            result.IsPast.Should().BeTrue();
+            result.CanBeCancelled.Should().BeFalse();
+            result.CanBeModified.Should().BeFalse();
+        }
+
         #endregion
 
         #region CreateBookingAsync Tests
@@ -522,6 +588,92 @@ namespace KosherClouds.BookingService.UnitTests.Services
 
             // Assert
             result.Should().NotBeNull();
+        }
+
+        [Fact]
+        public async Task CreateBookingAsync_WithHookahsWithProductId_StoresProductId()
+        {
+            // Arrange
+            var userId = BookingTestData.CreateUserId();
+            var productId = BookingTestData.CreateProductId();
+            var dto = BookingTestData.CreateValidBookingCreateDto();
+
+            dto.Hookahs = new List<HookahBookingDto>
+            {
+                new HookahBookingDto
+                {
+                    ProductId = productId,
+                    ProductName = "Test Hookah",
+                    ProductNameUk = "Тестовий кальян",
+                    TobaccoFlavor = "Mint",
+                    TobaccoFlavorUk = "М'ята",
+                    Strength = "Medium",
+                    PriceSnapshot = 250m
+                }
+            };
+
+            // Act
+            var result = await _bookingService.CreateBookingAsync(userId, dto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Hookahs.Should().HaveCount(1);
+            result.Hookahs[0].ProductId.Should().Be(productId);
+            result.Hookahs[0].ProductName.Should().Be("Test Hookah");
+            result.Hookahs[0].ProductNameUk.Should().Be("Тестовий кальян");
+            result.Hookahs[0].TobaccoFlavorUk.Should().Be("М'ята");
+            result.Hookahs[0].PriceSnapshot.Should().Be(250m);
+        }
+
+        [Fact]
+        public async Task CreateBookingAsync_WithHookahsWithoutProductId_CreatesSuccessfully()
+        {
+            // Arrange
+            var userId = BookingTestData.CreateUserId();
+            var dto = BookingTestData.CreateValidBookingCreateDto();
+
+            dto.Hookahs = new List<HookahBookingDto>
+            {
+                new HookahBookingDto
+                {
+                    ProductId = null,
+                    ProductName = "Custom Hookah",
+                    TobaccoFlavor = "Vanilla",
+                    Strength = "Light",
+                    PriceSnapshot = 200m
+                }
+            };
+
+            // Act
+            var result = await _bookingService.CreateBookingAsync(userId, dto);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Hookahs.Should().HaveCount(1);
+            result.Hookahs[0].ProductId.Should().BeNull();
+            result.Hookahs[0].ProductName.Should().Be("Custom Hookah");
+        }
+
+        [Fact]
+        public async Task CreateBookingAsync_ComputedProperties_CalculatedCorrectly()
+        {
+            // Arrange
+            var userId = BookingTestData.CreateUserId();
+            var dto = BookingTestData.CreateBookingWithHookahs(3);
+            dto.Adults = 4;
+            dto.Children = 2;
+
+            // Act
+            var result = await _bookingService.CreateBookingAsync(userId, dto);
+
+            // Assert
+            result.TotalGuests.Should().Be(6);
+            result.HasHookahs.Should().BeTrue();
+            result.HookahCount.Should().Be(3);
+            result.IsUpcoming.Should().BeTrue();
+            result.IsPast.Should().BeFalse();
+            result.CanBeCancelled.Should().BeTrue();
+            result.CanBeModified.Should().BeTrue();
         }
 
         #endregion
