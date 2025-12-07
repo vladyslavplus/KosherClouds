@@ -29,4 +29,8 @@
     <ProjectReference Include="..\..\..\shared\KosherClouds.ServiceDefaults\KosherClouds.ServiceDefaults.csproj" />
   </ItemGroup>
 
+	<ItemGroup>
+		<InternalsVisibleTo Include="KosherClouds.BookingService.IntegrationTests" />
+	</ItemGroup>
+
 </Project>

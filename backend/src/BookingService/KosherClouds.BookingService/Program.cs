@@ -5,6 +5,7 @@ using KosherClouds.ServiceDefaults.Extensions;
 using KosherClouds.ServiceDefaults.Helpers;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,7 +34,11 @@ builder.Services.AddScoped(typeof(ISortHelper<>), typeof(SortHelper<>));
 builder.Services.AddSingleton<ISortHelperFactory, SortHelperFactory>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerWithJwt("KosherClouds BookingService API");
 
@@ -57,3 +62,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 await app.RunAsync();
+
+#pragma warning disable S1118
+public partial class Program { }
+#pragma warning restore S1118
