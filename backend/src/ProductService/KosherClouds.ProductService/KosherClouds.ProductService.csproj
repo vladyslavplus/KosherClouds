@@ -30,4 +30,8 @@
     <ProjectReference Include="..\..\..\shared\KosherClouds.ServiceDefaults\KosherClouds.ServiceDefaults.csproj" />
   </ItemGroup>
 
+	<ItemGroup>
+		<InternalsVisibleTo Include="KosherClouds.ProductService.IntegrationTests" />
+	</ItemGroup>
+
 </Project>
