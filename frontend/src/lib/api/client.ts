@@ -71,10 +71,7 @@ apiClient.interceptors.response.use(
           return Promise.reject(refreshError);
         }
       } else {
-        clearAuth();
-        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
-          window.location.href = '/login';
-        }
+        return Promise.reject(error);
       }
     }
 
